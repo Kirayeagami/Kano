@@ -87,26 +87,29 @@ fun PersonalCareScreen() {
                     KanoButton(
                         onClick = { },
                         modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                     ) {
                         Icon(Icons.Outlined.QrCodeScanner, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Scan")
+                        Text("Scan", maxLines = 1)
                     }
                     KanoOutlinedButton(
                         onClick = { },
                         modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                     ) {
                         Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Photo")
+                        Text("Photo", maxLines = 1)
                     }
                     KanoOutlinedButton(
                         onClick = { },
                         modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                     ) {
                         Icon(Icons.Outlined.UploadFile, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Upload")
+                        Text("Upload", maxLines = 1)
                     }
                 }
             }

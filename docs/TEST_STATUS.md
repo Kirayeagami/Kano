@@ -25,14 +25,15 @@ Total Tests: **34 Passed** (0 Failures, 0 Skipped)
 
 ---
 
-## 2. Compose Previews & UI Verification
+## 2. Live Laptop Emulator Screenshots & UI Verification
 
-The following Compose Previews are implemented in `app/src/main/kotlin/app/kano/ui/UiPreviews.kt`:
-- `@Preview HomeScreenPreview`: Editorial Home Dashboard preview.
-- `@Preview DeviceScreenPreview`: Technical Device Dashboard preview.
-- `@Preview StyleScreenPreview`: Style Studio, Outfit evaluation, Wardrobe & Shopping gaps preview.
-- `@Preview PersonalCareScreenPreview`: Personal Care inventory & Anti-Overspending check preview.
-- `@Preview SettingsScreenPreview`: Privacy disclosures & release roadmap preview.
+The following live screenshots were captured directly from the **Android 15 (API 35) Laptop Emulator (`emulator-5554`)**:
+- [Home Dashboard](file:///E:/Works/Kano/docs/validation/home-final.png)
+- [Device Intelligence](file:///E:/Works/Kano/docs/validation/device-final.png)
+- [Media & Screenshots](file:///E:/Works/Kano/docs/validation/media-final.png)
+- [Style Studio & Wardrobe](file:///E:/Works/Kano/docs/validation/style-final.png)
+- [Personal Care & Grooming](file:///E:/Works/Kano/docs/validation/personal-care-final.png)
+- [Privacy & Roadmap](file:///E:/Works/Kano/docs/validation/privacy-final.png)
 
 ---
 
