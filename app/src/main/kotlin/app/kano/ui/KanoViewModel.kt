@@ -129,7 +129,19 @@ class KanoViewModel(private val graph: AppGraph) : ViewModel() {
     }
     fun setThemeMode(mode: KanoThemeMode) { graph.themeManager.setThemeMode(mode) }
 
-    init { refreshDevice() }
+    init {
+        observeLiveDeviceMetrics()
+    }
+
+    private fun observeLiveDeviceMetrics() {
+        viewModelScope.launch {
+            graph.device.observeLiveMetrics()
+                .catch { device.value = DeviceState.Failed }
+                .collect { snapshot ->
+                    device.value = DeviceState.Ready(snapshot)
+                }
+        }
+    }
 
     fun refreshDevice() {
         viewModelScope.launch {

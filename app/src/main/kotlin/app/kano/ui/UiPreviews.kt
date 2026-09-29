@@ -22,24 +22,36 @@ fun HomeScreenPreviewDark() {
 }
 
 // --- Device Screen Previews ---
+private val sampleDeviceSnapshot = DeviceSnapshot(
+    manufacturer = "Google",
+    model = "Pixel 8 Pro (Emulator)",
+    brand = "Google",
+    androidVersion = "15",
+    sdkInt = 35,
+    securityPatch = "2026-09-01",
+    buildId = "AP31.240901.001",
+    cpuAbi = "arm64-v8a",
+    cpuCores = 8,
+    storageTotal = 128L * 1024 * 1024 * 1024,
+    storageAvailable = 36L * 1024 * 1024 * 1024,
+    memoryTotal = 8L * 1024 * 1024 * 1024,
+    memoryAvailable = 4L * 1024 * 1024 * 1024,
+    memoryLow = false,
+    batteryPercent = 78,
+    charging = true,
+    batteryTemperatureC = 31.2,
+    batteryVoltageMv = 4120,
+    connectionType = "Wi-Fi Connected",
+    bluetoothEnabled = true,
+    capturedAt = System.currentTimeMillis(),
+)
+
 @Preview(name = "Device Screen - Light", showBackground = true, widthDp = 375)
 @Composable
 fun DeviceScreenPreviewLight() {
     KanoTheme(themeMode = KanoThemeMode.LIGHT) {
         DeviceScreen(
-            state = DeviceState.Ready(
-                DeviceSnapshot(
-                    model = "Google Pixel 8 Pro (Emulator)",
-                    androidVersion = "Android 15 (API 35)",
-                    storageTotal = 128L * 1024 * 1024 * 1024,
-                    storageAvailable = 36L * 1024 * 1024 * 1024,
-                    memoryTotal = 8L * 1024 * 1024 * 1024,
-                    memoryAvailable = 4L * 1024 * 1024 * 1024,
-                    batteryPercent = 78,
-                    charging = true,
-                    capturedAt = System.currentTimeMillis(),
-                )
-            ),
+            state = DeviceState.Ready(sampleDeviceSnapshot),
             refresh = {},
         )
     }
@@ -50,19 +62,7 @@ fun DeviceScreenPreviewLight() {
 fun DeviceScreenPreviewDark() {
     KanoTheme(themeMode = KanoThemeMode.DARK) {
         DeviceScreen(
-            state = DeviceState.Ready(
-                DeviceSnapshot(
-                    model = "Google Pixel 8 Pro (Emulator)",
-                    androidVersion = "Android 15 (API 35)",
-                    storageTotal = 128L * 1024 * 1024 * 1024,
-                    storageAvailable = 36L * 1024 * 1024 * 1024,
-                    memoryTotal = 8L * 1024 * 1024 * 1024,
-                    memoryAvailable = 4L * 1024 * 1024 * 1024,
-                    batteryPercent = 78,
-                    charging = true,
-                    capturedAt = System.currentTimeMillis(),
-                )
-            ),
+            state = DeviceState.Ready(sampleDeviceSnapshot),
             refresh = {},
         )
     }

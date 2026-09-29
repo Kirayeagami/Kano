@@ -39,43 +39,47 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// --- Bright Mode Palette ---
-val KanoCoralPrimaryLight = Color(0xFFE84A27)
+// --- UI 2.0 Bright Mode Palette (Inspired by Reference Images) ---
+val KanoCoralPrimaryLight = Color(0xFFFF3B1D) // Vibrant Red-Orange / Coral
 val KanoCoralGradientStartLight = Color(0xFFFF5A36)
-val KanoCoralGradientEndLight = Color(0xFFD8391A)
-val KanoOffWhiteBgLight = Color(0xFFFAF8F5)
+val KanoCoralGradientEndLight = Color(0xFFE82E0E)
+val KanoOffWhiteBgLight = Color(0xFFF8F6F2) // Clean warm off-white canvas
 val KanoSurfaceWhiteLight = Color(0xFFFFFFFF)
-val KanoSurfaceNeutralLight = Color(0xFFF3F0EC)
-val KanoSurfaceNeutralHighLight = Color(0xFFEBE6E0)
-val KanoInkPrimaryLight = Color(0xFF121212)
-val KanoInkSecondaryLight = Color(0xFF666666)
-val KanoPeachContainerLight = Color(0xFFFFE8E0)
-val KanoLavenderContainerLight = Color(0xFFE8E5F8)
-val KanoGreenContainerLight = Color(0xFFE8F5E9)
+val KanoSurfaceNeutralLight = Color(0xFFF1EEE8)
+val KanoSurfaceNeutralHighLight = Color(0xFFE6E2D8)
+val KanoInkPrimaryLight = Color(0xFF111111) // Near-black primary text
+val KanoInkSecondaryLight = Color(0xFF666666) // Muted charcoal
+val KanoPeachContainerLight = Color(0xFFFFEAE5)
+val KanoBlueContainerLight = Color(0xFFE8F2FF)
+val KanoGreenContainerLight = Color(0xFFE8F8F0)
+val KanoLavenderContainerLight = Color(0xFFF0ECF9)
 
-// --- Dark Mode Palette ---
-val KanoCoralPrimaryDark = Color(0xFFFF6C4B)
-val KanoCoralGradientStartDark = Color(0xFFFF7A5C)
-val KanoCoralGradientEndDark = Color(0xFFE04224)
-val KanoOffWhiteBgDark = Color(0xFF141210)
-val KanoSurfaceWhiteDark = Color(0xFF1E1C18)
-val KanoSurfaceNeutralDark = Color(0xFF282520)
-val KanoSurfaceNeutralHighDark = Color(0xFF322E28)
-val KanoInkPrimaryDark = Color(0xFFF7F4F0)
-val KanoInkSecondaryDark = Color(0xFF9E9790)
-val KanoPeachContainerDark = Color(0xFF3D1B13)
-val KanoLavenderContainerDark = Color(0xFF2A263B)
-val KanoGreenContainerDark = Color(0xFF1C3322)
+// --- UI 2.0 Dark Mode Palette (Nothing-Inspired Minimalist Command Center) ---
+val KanoCoralPrimaryDark = Color(0xFFFF3B1D) // Vibrant Orange-Red Accent
+val KanoCoralGradientStartDark = Color(0xFFFF5232)
+val KanoCoralGradientEndDark = Color(0xFFD82808)
+val KanoOffWhiteBgDark = Color(0xFF000000) // Pure Black Canvas
+val KanoSurfaceWhiteDark = Color(0xFF161616) // Deep Charcoal Surface
+val KanoSurfaceNeutralDark = Color(0xFF222222) // Tonal Card Surface
+val KanoSurfaceNeutralHighDark = Color(0xFF2C2C2C)
+val KanoInkPrimaryDark = Color(0xFFFFFFFF) // Crisp Warm White
+val KanoInkSecondaryDark = Color(0xFFA0A0A0) // Muted Gray
+val KanoPeachContainerDark = Color(0xFF3B120B)
+val KanoBlueContainerDark = Color(0xFF10253B)
+val KanoGreenContainerDark = Color(0xFF0E2E1B)
+val KanoLavenderContainerDark = Color(0xFF221A3B)
 
-// Composition-scoped tokens: simultaneous light/dark previews cannot mutate each other.
+// Composition-scoped tokens
 val KanoPeachContainer: Color @Composable get() = MaterialTheme.colorScheme.primaryContainer
 val KanoLavenderContainer: Color @Composable get() = MaterialTheme.colorScheme.secondaryContainer
 val KanoGreenContainer: Color @Composable get() = MaterialTheme.colorScheme.tertiaryContainer
+val KanoBlueContainer: Color @Composable get() = MaterialTheme.colorScheme.secondaryContainer
 val KanoCoralGradientStart: Color @Composable get() = MaterialTheme.colorScheme.primary
 val KanoCoralGradientEnd: Color @Composable get() = MaterialTheme.colorScheme.primary
 val KanoCoralPrimary: Color @Composable get() = MaterialTheme.colorScheme.primary
+
 private val KanoLightColors = lightColorScheme(
-    primary = Color(0xFFB83216),
+    primary = KanoCoralPrimaryLight,
     onPrimary = Color.White,
     background = KanoOffWhiteBgLight,
     onBackground = KanoInkPrimaryLight,
@@ -87,21 +91,21 @@ private val KanoLightColors = lightColorScheme(
     surfaceContainerLow = KanoOffWhiteBgLight,
     surfaceContainer = KanoSurfaceNeutralLight,
     surfaceContainerHigh = KanoSurfaceNeutralHighLight,
-    surfaceContainerHighest = Color(0xFFE0DAD2),
+    surfaceContainerHighest = Color(0xFFDCD6CC),
     primaryContainer = KanoPeachContainerLight,
-    onPrimaryContainer = Color(0xFF5A1407),
-    secondary = Color(0xFF4A3E3D),
+    onPrimaryContainer = Color(0xFF5A0E00),
+    secondary = Color(0xFF333333),
     onSecondary = Color.White,
     tertiaryContainer = KanoGreenContainerLight,
     secondaryContainer = KanoLavenderContainerLight,
-    onSecondaryContainer = Color(0xFF231C38),
-    outline = Color(0xFFD4CDC5),
-    error = Color(0xFFC62828),
+    onSecondaryContainer = Color(0xFF21153B),
+    outline = Color(0xFFE0DDD5),
+    error = Color(0xFFD32F2F),
 )
 
 private val KanoDarkColors = darkColorScheme(
     primary = KanoCoralPrimaryDark,
-    onPrimary = Color(0xFF2A0A04),
+    onPrimary = Color.White,
     background = KanoOffWhiteBgDark,
     onBackground = KanoInkPrimaryDark,
     surface = KanoSurfaceWhiteDark,
@@ -112,15 +116,15 @@ private val KanoDarkColors = darkColorScheme(
     surfaceContainerLow = KanoOffWhiteBgDark,
     surfaceContainer = KanoSurfaceNeutralDark,
     surfaceContainerHigh = KanoSurfaceNeutralHighDark,
-    surfaceContainerHighest = Color(0xFF3A352F),
+    surfaceContainerHighest = Color(0xFF383838),
     primaryContainer = KanoPeachContainerDark,
-    onPrimaryContainer = Color(0xFFFFD0C5),
-    secondary = Color(0xFFD4C2BD),
-    onSecondary = Color(0xFF2A201E),
+    onPrimaryContainer = Color(0xFFFFD1C7),
+    secondary = Color(0xFFCCCCCC),
+    onSecondary = Color.Black,
     tertiaryContainer = KanoGreenContainerDark,
     secondaryContainer = KanoLavenderContainerDark,
     onSecondaryContainer = Color(0xFFE2DCF8),
-    outline = Color(0xFF48423B),
+    outline = Color(0xFF2A2A2A),
     error = Color(0xFFEF5350),
 )
 
@@ -143,7 +147,7 @@ fun KanoTheme(
         shapes = Shapes(
             extraSmall = RoundedCornerShape(8.dp),
             small = RoundedCornerShape(12.dp),
-            medium = RoundedCornerShape(16.dp),
+            medium = RoundedCornerShape(20.dp),
             large = RoundedCornerShape(24.dp),
             extraLarge = RoundedCornerShape(28.dp),
         ),
@@ -163,7 +167,7 @@ fun KanoButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -183,14 +187,14 @@ fun KanoHeroButton(
     val gradient = Brush.horizontalGradient(listOf(KanoCoralGradientStart, KanoCoralGradientEnd))
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         color = Color.Transparent,
         enabled = enabled,
         onClick = onClick,
     ) {
         Row(
             modifier = Modifier
-                .background(gradient, RoundedCornerShape(16.dp))
+                .background(gradient, RoundedCornerShape(20.dp))
                 .padding(horizontal = 20.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             content = content,
@@ -210,7 +214,7 @@ fun KanoOutlinedButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         contentPadding = contentPadding,
         content = content,
@@ -244,7 +248,7 @@ fun KanoCard(
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-    cornerRadius: Dp = 20.dp,
+    cornerRadius: Dp = 24.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
@@ -254,7 +258,7 @@ fun KanoCard(
         shadowElevation = 2.dp,
         border = BorderStroke(1.dp, borderColor),
     ) {
-        Column(modifier = Modifier.padding(18.dp), content = content)
+        Column(modifier = Modifier.padding(20.dp), content = content)
     }
 }
 
@@ -267,7 +271,7 @@ fun StatusChip(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(10.dp),
         color = containerColor,
     ) {
         Text(
@@ -302,8 +306,8 @@ fun SectionTitle(title: String, detail: String) {
 @Composable
 fun FactRow(label: String, value: String, detail: String? = null) {
     Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
-        Column(Modifier.fillMaxWidth()) {
-            Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
             Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
