@@ -19,10 +19,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Checkroom
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PermMedia
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Smartphone
+import androidx.compose.material.icons.outlined.SettingsSuggest
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.kano.BuildConfig
 
 @Composable
@@ -50,7 +54,6 @@ fun HomeScreen(
     LaunchedEffect(Unit) { isAssembled = true }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Ambient Wave Background Layer
         KanoWaveBackground()
 
         LazyColumn(
@@ -315,12 +318,64 @@ fun HomeScreen(
 }
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(model: KanoViewModel? = null) {
+    val currentThemeMode = model?.themeMode?.collectAsStateWithLifecycle()?.value ?: KanoThemeMode.SYSTEM
+
     LazyColumn(
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        item { SectionTitle("Privacy & Roadmap", "Access is strictly scoped to what you choose.") }
+        item { SectionTitle("Privacy & Appearance", "Access is strictly scoped to what you choose.") }
+
+        // Appearance Theme Selector Card
+        item {
+            KanoGlassCard {
+                Text(
+                    text = "Appearance Theme",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = "Select Bright Mode, Dark Mode, or follow System Default.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 12.dp),
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    KanoOutlinedButton(
+                        onClick = { model?.setThemeMode(KanoThemeMode.SYSTEM) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                    ) {
+                        Icon(Icons.Outlined.SettingsSuggest, contentDescription = null)
+                        Spacer(Modifier.width(4.dp))
+                        Text("System", maxLines = 1, fontWeight = if (currentThemeMode == KanoThemeMode.SYSTEM) FontWeight.Bold else FontWeight.Normal)
+                    }
+                    KanoOutlinedButton(
+                        onClick = { model?.setThemeMode(KanoThemeMode.LIGHT) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                    ) {
+                        Icon(Icons.Outlined.LightMode, contentDescription = null)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Light", maxLines = 1, fontWeight = if (currentThemeMode == KanoThemeMode.LIGHT) FontWeight.Bold else FontWeight.Normal)
+                    }
+                    KanoOutlinedButton(
+                        onClick = { model?.setThemeMode(KanoThemeMode.DARK) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                    ) {
+                        Icon(Icons.Outlined.DarkMode, contentDescription = null)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Dark", maxLines = 1, fontWeight = if (currentThemeMode == KanoThemeMode.DARK) FontWeight.Bold else FontWeight.Normal)
+                    }
+                }
+            }
+        }
 
         item {
             KanoGlassCard {

@@ -10,6 +10,7 @@ import app.kano.data.KanoDatabase
 import app.kano.data.MediaRepository
 import app.kano.platform.DeviceReader
 import app.kano.security.KeystoreCredentialStore
+import app.kano.ui.ThemeManager
 
 class KanoApplication : Application() {
     val graph: AppGraph by lazy { AppGraph(this) }
@@ -22,4 +23,5 @@ class AppGraph(context: Context) {
     val work: WorkManager = WorkManager.getInstance(context)
     val ai = AiRouter(emptyList(), PrivacyFirewall())
     val credentials by lazy { KeystoreCredentialStore(context) }
+    val themeManager = ThemeManager(context)
 }

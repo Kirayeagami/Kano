@@ -56,6 +56,9 @@ class KanoViewModel(private val graph: AppGraph) : ViewModel() {
         .catch { message.value = "Job status unavailable. Reopen Kano to retry."; emit(emptyList()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    val themeMode = graph.themeManager.themeMode
+    fun setThemeMode(mode: KanoThemeMode) { graph.themeManager.setThemeMode(mode) }
+
     init { refreshDevice() }
 
     fun refreshDevice() {

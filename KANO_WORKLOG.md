@@ -6,6 +6,17 @@ and a continuation prompt. This is development version **0.1.0-dev**, not finish
 
 ## Latest Milestones (2026-09-29)
 
+- **Dual-Theme System (Bright Mode + Dark Mode + System Default)**:
+  - Implemented `ThemeManager.kt` managing persistent theme modes (`SYSTEM`, `LIGHT`, `DARK`) in `SharedPreferences`.
+  - Implemented tuned Light & Dark color schemes in `Theme.kt`:
+    - Bright Mode: Warm off-white canvas (`#FAF8F5`), white surfaces, near-black typography (`#121212`), Coral primary (`#E84A27`), peach/lavender containers.
+    - Dark Mode: Deep warm charcoal canvas (`#141210`), deep surfaces (`#1E1C18`), warm off-white typography (`#F7F4F0`), tuned non-neon Coral (`#FF6C4B`), dark peach/lavender glass containers.
+  - Added interactive Appearance Theme Selector (`System`, `Light`, `Dark`) on Settings/Privacy screen.
+  - Added dual Light and Dark Compose Previews in `UiPreviews.kt` for split-view IDE testing in Android Studio.
+  - Re-installed and validated live on **Android 15 (API 35) Emulator (`emulator-5554`)** in BOTH Light and Dark modes.
+  - Captured 12 live screenshots under `docs/validation/light/` and `docs/validation/dark/`.
+  - Executed full test & lint suite (`scripts/check.ps1`): **34/34 tests passed, 0 lint errors**.
+
 - **Advanced UI Motion, Glassmorphism & Wave System**:
   - Implemented reusable motion & glassmorphism framework in `MotionComponents.kt`:
     - `KanoGlassSurface` & `KanoGlassCard` translucent surfaces with soft diffuse shadows and subtle borders.

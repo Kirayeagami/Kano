@@ -23,7 +23,6 @@ import androidx.compose.material.icons.outlined.Sanitizer
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Smartphone
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -71,8 +70,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            KanoTheme {
-                val model: KanoViewModel = viewModel(factory = KanoViewModel.factory((application as KanoApplication).graph))
+            val model: KanoViewModel = viewModel(factory = KanoViewModel.factory((application as KanoApplication).graph))
+            val themeMode by model.themeMode.collectAsStateWithLifecycle()
+            KanoTheme(themeMode = themeMode) {
                 KanoApp(model)
             }
         }
@@ -183,7 +183,7 @@ fun KanoApp(model: KanoViewModel) {
             composable("media") { MediaScreen(model) }
             composable("style") { StyleScreen() }
             composable("personal_care") { PersonalCareScreen() }
-            composable("settings") { SettingsScreen() }
+            composable("settings") { SettingsScreen(model) }
         }
     }
 }

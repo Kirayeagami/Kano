@@ -2,6 +2,7 @@ package app.kano.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +25,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,48 +39,121 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// Refined Premium Warm-Neutral & Coral Accent Palette
-val KanoCoralPrimary = Color(0xFFE84A27)
-val KanoCoralGradientStart = Color(0xFFFF5A36)
-val KanoCoralGradientEnd = Color(0xFFD8391A)
-val KanoOffWhiteBg = Color(0xFFFAF8F5)
-val KanoSurfaceWhite = Color(0xFFFFFFFF)
-val KanoSurfaceNeutral = Color(0xFFF3F0EC)
-val KanoSurfaceNeutralHigh = Color(0xFFEBE6E0)
-val KanoInkPrimary = Color(0xFF121212)
-val KanoInkSecondary = Color(0xFF666666)
-val KanoPeachContainer = Color(0xFFFFE8E0)
-val KanoLavenderContainer = Color(0xFFE8E5F8)
-val KanoGreenContainer = Color(0xFFE8F5E9)
+// --- Bright Mode Palette ---
+val KanoCoralPrimaryLight = Color(0xFFE84A27)
+val KanoCoralGradientStartLight = Color(0xFFFF5A36)
+val KanoCoralGradientEndLight = Color(0xFFD8391A)
+val KanoOffWhiteBgLight = Color(0xFFFAF8F5)
+val KanoSurfaceWhiteLight = Color(0xFFFFFFFF)
+val KanoSurfaceNeutralLight = Color(0xFFF3F0EC)
+val KanoSurfaceNeutralHighLight = Color(0xFFEBE6E0)
+val KanoInkPrimaryLight = Color(0xFF121212)
+val KanoInkSecondaryLight = Color(0xFF666666)
+val KanoPeachContainerLight = Color(0xFFFFE8E0)
+val KanoLavenderContainerLight = Color(0xFFE8E5F8)
+val KanoGreenContainerLight = Color(0xFFE8F5E9)
 
-private val KanoColors = lightColorScheme(
-    primary = KanoCoralPrimary,
+// --- Dark Mode Palette ---
+val KanoCoralPrimaryDark = Color(0xFFFF6C4B)
+val KanoCoralGradientStartDark = Color(0xFFFF7A5C)
+val KanoCoralGradientEndDark = Color(0xFFE04224)
+val KanoOffWhiteBgDark = Color(0xFF141210)
+val KanoSurfaceWhiteDark = Color(0xFF1E1C18)
+val KanoSurfaceNeutralDark = Color(0xFF282520)
+val KanoSurfaceNeutralHighDark = Color(0xFF322E28)
+val KanoInkPrimaryDark = Color(0xFFF7F4F0)
+val KanoInkSecondaryDark = Color(0xFF9E9790)
+val KanoPeachContainerDark = Color(0xFF3D1B13)
+val KanoLavenderContainerDark = Color(0xFF2A263B)
+val KanoGreenContainerDark = Color(0xFF1C3322)
+
+// Dynamic Color Holders for Motion/Wave Systems
+var KanoPeachContainer = KanoPeachContainerLight
+var KanoLavenderContainer = KanoLavenderContainerLight
+var KanoGreenContainer = KanoGreenContainerLight
+var KanoCoralGradientStart = KanoCoralGradientStartLight
+var KanoCoralGradientEnd = KanoCoralGradientEndLight
+var KanoCoralPrimary = KanoCoralPrimaryLight
+
+private val KanoLightColors = lightColorScheme(
+    primary = KanoCoralPrimaryLight,
     onPrimary = Color.White,
-    background = KanoOffWhiteBg,
-    onBackground = KanoInkPrimary,
-    surface = KanoSurfaceWhite,
-    onSurface = KanoInkPrimary,
-    surfaceVariant = KanoSurfaceNeutral,
-    onSurfaceVariant = KanoInkSecondary,
+    background = KanoOffWhiteBgLight,
+    onBackground = KanoInkPrimaryLight,
+    surface = KanoSurfaceWhiteLight,
+    onSurface = KanoInkPrimaryLight,
+    surfaceVariant = KanoSurfaceNeutralLight,
+    onSurfaceVariant = KanoInkSecondaryLight,
     surfaceContainerLowest = Color.White,
-    surfaceContainerLow = KanoOffWhiteBg,
-    surfaceContainer = KanoSurfaceNeutral,
-    surfaceContainerHigh = KanoSurfaceNeutralHigh,
+    surfaceContainerLow = KanoOffWhiteBgLight,
+    surfaceContainer = KanoSurfaceNeutralLight,
+    surfaceContainerHigh = KanoSurfaceNeutralHighLight,
     surfaceContainerHighest = Color(0xFFE0DAD2),
-    primaryContainer = KanoPeachContainer,
+    primaryContainer = KanoPeachContainerLight,
     onPrimaryContainer = Color(0xFF5A1407),
     secondary = Color(0xFF4A3E3D),
     onSecondary = Color.White,
-    secondaryContainer = KanoLavenderContainer,
+    secondaryContainer = KanoLavenderContainerLight,
     onSecondaryContainer = Color(0xFF231C38),
     outline = Color(0xFFD4CDC5),
     error = Color(0xFFC62828),
 )
 
+private val KanoDarkColors = darkColorScheme(
+    primary = KanoCoralPrimaryDark,
+    onPrimary = Color(0xFF2A0A04),
+    background = KanoOffWhiteBgDark,
+    onBackground = KanoInkPrimaryDark,
+    surface = KanoSurfaceWhiteDark,
+    onSurface = KanoInkPrimaryDark,
+    surfaceVariant = KanoSurfaceNeutralDark,
+    onSurfaceVariant = KanoInkSecondaryDark,
+    surfaceContainerLowest = KanoSurfaceWhiteDark,
+    surfaceContainerLow = KanoOffWhiteBgDark,
+    surfaceContainer = KanoSurfaceNeutralDark,
+    surfaceContainerHigh = KanoSurfaceNeutralHighDark,
+    surfaceContainerHighest = Color(0xFF3A352F),
+    primaryContainer = KanoPeachContainerDark,
+    onPrimaryContainer = Color(0xFFFFD0C5),
+    secondary = Color(0xFFD4C2BD),
+    onSecondary = Color(0xFF2A201E),
+    secondaryContainer = KanoLavenderContainerDark,
+    onSecondaryContainer = Color(0xFFE2DCF8),
+    outline = Color(0xFF48423B),
+    error = Color(0xFFEF5350),
+)
+
 @Composable
-fun KanoTheme(content: @Composable () -> Unit) {
+fun KanoTheme(
+    themeMode: KanoThemeMode = KanoThemeMode.SYSTEM,
+    content: @Composable () -> Unit,
+) {
+    val darkTheme = when (themeMode) {
+        KanoThemeMode.LIGHT -> false
+        KanoThemeMode.DARK -> true
+        KanoThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
+
+    if (darkTheme) {
+        KanoPeachContainer = KanoPeachContainerDark
+        KanoLavenderContainer = KanoLavenderContainerDark
+        KanoGreenContainer = KanoGreenContainerDark
+        KanoCoralGradientStart = KanoCoralGradientStartDark
+        KanoCoralGradientEnd = KanoCoralGradientEndDark
+        KanoCoralPrimary = KanoCoralPrimaryDark
+    } else {
+        KanoPeachContainer = KanoPeachContainerLight
+        KanoLavenderContainer = KanoLavenderContainerLight
+        KanoGreenContainer = KanoGreenContainerLight
+        KanoCoralGradientStart = KanoCoralGradientStartLight
+        KanoCoralGradientEnd = KanoCoralGradientEndLight
+        KanoCoralPrimary = KanoCoralPrimaryLight
+    }
+
+    val colors = if (darkTheme) KanoDarkColors else KanoLightColors
+
     MaterialTheme(
-        colorScheme = KanoColors,
+        colorScheme = colors,
         typography = Typography(),
         shapes = Shapes(
             extraSmall = RoundedCornerShape(8.dp),
@@ -183,7 +258,7 @@ fun KanoCircularIconButton(
 fun KanoCard(
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    borderColor: Color = Color.Black.copy(alpha = 0.06f),
+    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
     cornerRadius: Dp = 20.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -248,5 +323,5 @@ fun FactRow(label: String, value: String, detail: String? = null) {
         }
         if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
-    HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
+    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 }
