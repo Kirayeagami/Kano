@@ -18,6 +18,11 @@ import kotlinx.coroutines.withContext
 
 data class ImportSummary(val accepted: Int, val rejected: Int)
 
+data class DuplicateGroup(
+    val sha256: String,
+    val items: List<MediaRecord>,
+)
+
 class MediaRepository(context: Context, private val dao: MediaDao) {
     private val resolver = context.contentResolver
     private val mutation = Mutex()
@@ -78,6 +83,42 @@ class MediaRepository(context: Context, private val dao: MediaDao) {
                 currentCoroutineContext().ensureActive()
                 dao.save(result)
             }
+        }
+    }
+
+    /** Finds duplicate items sharing identical non-null SHA-256 content hashes. */
+    suspend fun findDuplicates(): List<DuplicateGroup> = withContext(Dispatchers.IO) {
+        mutation.withLock {
+            val indexed = dao.all().filter { !it.sha256.isNullOrBlank() }
+            indexed.groupBy { it.sha256!! }
+                .filter { it.value.size > 1 }
+                .map { DuplicateGroup(sha256 = it.key, items = it.value) }
+        }
+    }
+
+    /** Extract-Before-Delete: Re-validates file state, releases SAF read grant, and removes record. */
+    suspend fun extractBeforeDelete(record: MediaRecord): Boolean = withContext(Dispatchers.IO) {
+        mutation.withLock {
+            val uri = record.uri.toUri()
+            if (resolver.persistedUriPermissions.none { it.uri == uri && it.isReadPermission }) {
+                dao.save(record.copy(state = "ACCESS_REVOKED", errorCode = "SELECT_AGAIN"))
+                return@withLock false
+            }
+            val freshCheck = try {
+                inspect(uri)
+            } catch (_: Exception) {
+                return@withLock false
+            }
+            if (freshCheck.sha256 != record.sha256 && record.sha256 != null) {
+                dao.save(freshCheck.copy(state = "ERROR", errorCode = "SOURCE_CHANGED"))
+                return@withLock false
+            }
+            try {
+                resolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (_: Exception) {
+                // Ignore grant release failures if already revoked
+            }
+            dao.delete(record.uri) > 0
         }
     }
 

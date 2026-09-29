@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Checkroom
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.PermMedia
 import androidx.compose.material.icons.outlined.Sanitizer
 import androidx.compose.material.icons.outlined.Shield
@@ -63,6 +64,7 @@ import app.kano.ui.DeviceScreen
 import app.kano.ui.HomeScreen
 import app.kano.ui.KanoTheme
 import app.kano.ui.KanoViewModel
+import app.kano.ui.KnowledgeVaultScreen
 import app.kano.ui.MediaScreen
 import app.kano.ui.PersonalCareScreen
 import app.kano.ui.SettingsScreen
@@ -111,6 +113,7 @@ fun KanoApp(model: KanoViewModel) {
         NavDestination("home", "Home", Icons.Outlined.Home),
         NavDestination("device", "Device", Icons.Outlined.Smartphone),
         NavDestination("media", "Media", Icons.Outlined.PermMedia),
+        NavDestination("vault", "Vault", Icons.Outlined.Lightbulb),
         NavDestination("style", "Style", Icons.Outlined.Checkroom),
         NavDestination("personal_care", "Care", Icons.Outlined.Sanitizer),
         NavDestination("settings", "Privacy", Icons.Outlined.Shield),
@@ -201,6 +204,7 @@ fun KanoApp(model: KanoViewModel) {
             }
             composable("device") { DeviceScreen(device, model::refreshDevice) }
             composable("media") { MediaScreen(model) }
+            composable("vault") { KnowledgeVaultScreen(model) }
             composable("style") { StyleScreen() }
             composable("personal_care") { PersonalCareScreen(model) }
             composable("settings") { SettingsScreen(model) }

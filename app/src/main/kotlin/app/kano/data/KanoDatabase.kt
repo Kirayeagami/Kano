@@ -46,6 +46,9 @@ interface MediaDao {
     @Query("SELECT COUNT(*) FROM media")
     suspend fun count(): Int
 
+    @Query("DELETE FROM media WHERE uri = :uri")
+    suspend fun delete(uri: String): Int
+
     @Query("DELETE FROM media")
     suspend fun clear()
 }
