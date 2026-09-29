@@ -1,4 +1,4 @@
-# KANO — Test Status Record
+# KANO — Test & UI Verification Status Record
 
 Updated: 2026-09-29
 
@@ -25,9 +25,20 @@ Total Tests: **34 Passed** (0 Failures, 0 Skipped)
 
 ---
 
-## 2. Automated Verification Script
+## 2. Compose Previews & UI Verification
+
+The following Compose Previews are implemented in `app/src/main/kotlin/app/kano/ui/UiPreviews.kt`:
+- `@Preview HomeScreenPreview`: Editorial Home Dashboard preview.
+- `@Preview DeviceScreenPreview`: Technical Device Dashboard preview.
+- `@Preview StyleScreenPreview`: Style Studio, Outfit evaluation, Wardrobe & Shopping gaps preview.
+- `@Preview PersonalCareScreenPreview`: Personal Care inventory & Anti-Overspending check preview.
+- `@Preview SettingsScreenPreview`: Privacy disclosures & release roadmap preview.
+
+---
+
+## 3. Automated Build Script
 
 Script: `scripts/check.ps1`
 Command: `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1`
 Validates: `:core:test`, `:app:testDebugUnitTest`, `:app:lintDebug`, `:app:assembleDebug`, merged manifest permissions, backup rules.
-Status: **PASSING** (91 actionable tasks executed successfully).
+Status: **PASSING** (91 actionable tasks executed successfully, 0 lint errors).
