@@ -109,8 +109,9 @@ fun PersonalCareScreen(model: KanoViewModel? = null) {
             }
         }
 
-        // Anti-Overspending Need Check
+        // Anti-Overspending Smart Check
         item {
+            val itemCount = (state as? CareState.Ready)?.items.orEmpty().size
             KanoGlassCard(glassColor = KanoGreenContainer.copy(alpha = 0.88f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -121,11 +122,12 @@ fun PersonalCareScreen(model: KanoViewModel? = null) {
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f),
                     )
-                    StatusChip("CHECK PASSED")
+                    StatusChip(if (itemCount > 0) "CHECK PASSED" else "EMPTY INVENTORY")
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "NO PURCHASE NEEDED — You already own 2 active cleansers in your inventory.",
+                    text = if (itemCount > 0) "NO PURCHASE NEEDED — You already own $itemCount active care products in your inventory."
+                           else "NO ACTIVE PRODUCTS — Add your current products to enable anti-overspending checks.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                 )

@@ -1,5 +1,6 @@
 package app.kano
 
+import android.animation.ValueAnimator
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Checkroom
@@ -47,7 +51,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
@@ -93,7 +96,7 @@ class MainActivity : ComponentActivity() {
                     enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
                 }
                 CompositionLocalProvider(LocalGlassEnabled provides glass,
-                    LocalMotionEnabled provides (!reducedMotion && lifecycleState.isAtLeast(Lifecycle.State.RESUMED) && android.animation.ValueAnimator.areAnimatorsEnabled())) {
+                    LocalMotionEnabled provides (!reducedMotion && lifecycleState.isAtLeast(Lifecycle.State.RESUMED) && ValueAnimator.areAnimatorsEnabled())) {
                     KanoApp(model)
                 }
             }
@@ -119,8 +122,6 @@ fun KanoApp(model: KanoViewModel) {
         NavDestination("settings", "Privacy", Icons.Outlined.Shield),
     )
 
-    val navigationColumns = if (LocalDensity.current.fontScale >= 1.5f) 2 else 3
-
     LaunchedEffect(message) {
         message?.let { snackbars.showSnackbar(it); model.message.value = null }
     }
@@ -141,49 +142,49 @@ fun KanoApp(model: KanoViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(28.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = 6.dp,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(32.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                    shadowElevation = 8.dp,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
                 ) {
-                    Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
-                        destinations.chunked(navigationColumns).forEach { rowDestinations ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 6.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        destinations.forEach { dest ->
+                            val active = entry?.destination?.route == dest.route
+                            Surface(
+                                onClick = { navigate(dest.route) },
+                                shape = CircleShape,
+                                color = if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                modifier = Modifier
+                                    .semantics { selected = active; role = Role.Tab },
                             ) {
-                                rowDestinations.forEach { dest ->
-                                    val active = entry?.destination?.route == dest.route
-                                    Surface(
-                                        onClick = { navigate(dest.route) },
-                                        shape = RoundedCornerShape(16.dp),
-                                        color = if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(horizontal = 2.dp)
-                                            .semantics { selected = active; role = Role.Tab },
-                                    ) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.padding(vertical = 8.dp),
-                                        ) {
-                                            Icon(
-                                                imageVector = dest.icon,
-                                                contentDescription = null,
-                                                tint = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                            Spacer(Modifier.height(2.dp))
-                                            Text(
-                                                text = dest.label,
-                                                fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                        }
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        imageVector = dest.icon,
+                                        contentDescription = dest.label,
+                                        tint = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                    if (active) {
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            text = dest.label,
+                                            fontWeight = FontWeight.Bold,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        )
                                     }
                                 }
                             }
@@ -200,6 +201,7 @@ fun KanoApp(model: KanoViewModel) {
                     openMedia = { navigate("media") },
                     openStyle = { navigate("style") },
                     openPersonalCare = { navigate("personal_care") },
+                    openVault = { navigate("vault") },
                 )
             }
             composable("device") { DeviceScreen(device, model::refreshDevice) }
