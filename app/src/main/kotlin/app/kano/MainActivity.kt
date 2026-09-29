@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Checkroom
 import androidx.compose.material.icons.outlined.Home
@@ -18,14 +22,14 @@ import androidx.compose.material.icons.outlined.PermMedia
 import androidx.compose.material.icons.outlined.Sanitizer
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Smartphone
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -107,36 +111,57 @@ fun KanoApp(model: KanoViewModel) {
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbars) },
         bottomBar = {
-            Column(Modifier.fillMaxWidth().navigationBarsPadding()) {
-                destinations.chunked(navigationColumns).forEach { rowDestinations ->
-                    Row(Modifier.fillMaxWidth()) {
-                        rowDestinations.forEach { dest ->
-                            val active = entry?.destination?.route == dest.route
-                            TextButton(
-                                onClick = { navigate(dest.route) },
-                                shape = MaterialTheme.shapes.small,
-                                colors = ButtonDefaults.textButtonColors(
-                                    containerColor = if (active) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
-                                ),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics { selected = active; role = Role.Tab },
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 6.dp,
+                    border = BorderStroke(1.dp, Color.Black.copy(alpha = 0.08f)),
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
+                        destinations.chunked(navigationColumns).forEach { rowDestinations ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(
-                                        imageVector = dest.icon,
-                                        contentDescription = null,
-                                        tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    Spacer(Modifier.height(2.dp))
-                                    Text(
-                                        text = dest.label,
-                                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
+                                rowDestinations.forEach { dest ->
+                                    val active = entry?.destination?.route == dest.route
+                                    Surface(
+                                        onClick = { navigate(dest.route) },
+                                        shape = RoundedCornerShape(16.dp),
+                                        color = if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 2.dp)
+                                            .semantics { selected = active; role = Role.Tab },
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            modifier = Modifier.padding(vertical = 8.dp),
+                                        ) {
+                                            Icon(
+                                                imageVector = dest.icon,
+                                                contentDescription = dest.label,
+                                                tint = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                            Spacer(Modifier.height(2.dp))
+                                            Text(
+                                                text = dest.label,
+                                                fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }

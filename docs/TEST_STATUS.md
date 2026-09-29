@@ -1,4 +1,4 @@
-# KANO — Test & UI Verification Status Record
+# KANO — Test & Motion UI Verification Status Record
 
 Updated: 2026-09-29
 
@@ -25,15 +25,15 @@ Total Tests: **34 Passed** (0 Failures, 0 Skipped)
 
 ---
 
-## 2. Live Laptop Emulator Screenshots & UI Verification
+## 2. Live Motion & Glassmorphism Screenshots
 
-The following live screenshots were captured directly from the **Android 15 (API 35) Laptop Emulator (`emulator-5554`)**:
-- [Home Dashboard](file:///E:/Works/Kano/docs/validation/home-final.png)
-- [Device Intelligence](file:///E:/Works/Kano/docs/validation/device-final.png)
-- [Media & Screenshots](file:///E:/Works/Kano/docs/validation/media-final.png)
-- [Style Studio & Wardrobe](file:///E:/Works/Kano/docs/validation/style-final.png)
-- [Personal Care & Grooming](file:///E:/Works/Kano/docs/validation/personal-care-final.png)
-- [Privacy & Roadmap](file:///E:/Works/Kano/docs/validation/privacy-final.png)
+Captured directly from the **Android 15 (API 35) Laptop Emulator (`emulator-5554`)**:
+- [Home Dashboard (Animated Gradient & Glass)](file:///E:/Works/Kano/docs/validation/home-animated-final.png)
+- [Device Intelligence (Display Numbers & Metrics)](file:///E:/Works/Kano/docs/validation/device-animated-final.png)
+- [Media & Screenshots (Glass Cards & Badges)](file:///E:/Works/Kano/docs/validation/media-animated-final.png)
+- [Style Studio & Wardrobe (Photo Scanning & Outfit Eval)](file:///E:/Works/Kano/docs/validation/style-animated-final.png)
+- [Personal Care & Grooming (Product Glass Cards)](file:///E:/Works/Kano/docs/validation/care-animated-final.png)
+- [Privacy & Roadmap (Glass Matrix)](file:///E:/Works/Kano/docs/validation/privacy-animated-final.png)
 
 ---
 

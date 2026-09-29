@@ -6,6 +6,20 @@ and a continuation prompt. This is development version **0.1.0-dev**, not finish
 
 ## Latest Milestones (2026-09-29)
 
+- **Advanced UI Motion, Glassmorphism & Wave System**:
+  - Implemented reusable motion & glassmorphism framework in `MotionComponents.kt`:
+    - `KanoGlassSurface` & `KanoGlassCard` translucent surfaces with soft diffuse shadows and subtle borders.
+    - `KanoAnimatedCard` with entrance slide-up/fade and spring press scale interaction.
+    - `KanoFloatingControl` circular action button with ambient vertical floating motion loop.
+    - `KanoWaveBackground` ambient background wave layer drawn behind content.
+    - `KanoGradientHero` Coral gradient container (`#FF5A36` -> `#D8391A`).
+    - `KanoAnimatedNumericText` vertical sliding transition for display metrics.
+  - Upgraded screens with glass cards, ambient wave backgrounds, photo scanning animation lines, and oversized typography.
+  - Re-installed and validated live on **Android 15 (API 35) Emulator (`emulator-5554`)**.
+  - Captured 6 live motion screenshots under `docs/validation/`:
+    - `home-animated-final.png`, `device-animated-final.png`, `media-animated-final.png`, `style-animated-final.png`, `care-animated-final.png`, `privacy-animated-final.png`.
+  - Executed full test & lint suite (`scripts/check.ps1`): **34/34 tests passed, 0 lint errors**.
+
 - **Laptop Emulator Live Validation & Screenshot Evidence**:
   - Assembled and installed `app-debug.apk` onto **Android 15 (API 35) Emulator (`emulator-5554`)**.
   - Verified live runtime for all 6 screens (`Home`, `Device`, `Media`, `Style`, `Care`, `Privacy`).

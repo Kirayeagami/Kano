@@ -1,10 +1,12 @@
 package app.kano.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Sanitizer
@@ -46,133 +47,137 @@ fun PersonalCareScreen() {
         PersonalCareItem("Mint Fluoride Toothpaste", "Oral Care", "Colgate", "ACTIVE", "150g · ~50% remaining"),
     )
 
-    LazyColumn(
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            SectionTitle(
-                title = "Personal Care & Lifestyle",
-                detail = "Track personal care products, manage routines, and prevent duplicate or unnecessary purchases.",
-            )
-        }
+    Box(modifier = Modifier.fillMaxSize()) {
+        KanoWaveBackground(waveColor = KanoGreenContainer.copy(alpha = 0.4f))
 
-        // Product Scanner & Add Actions Card
-        item {
-            KanoCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Sanitizer,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                    Spacer(Modifier.width(8.dp))
+        LazyColumn(
+            contentPadding = PaddingValues(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item {
+                SectionTitle(
+                    title = "Personal Care & Lifestyle",
+                    detail = "Track personal care products, manage routines, and prevent duplicate or unnecessary purchases.",
+                )
+            }
+
+            // Product Scanner & Add Actions Glass Card
+            item {
+                KanoGlassCard(cornerRadius = 24.dp) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.Sanitizer,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Add / Scan Personal Product",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                     Text(
-                        text = "Add / Scan Personal Product",
+                        text = "Scan product label or upload photo to auto-detect category, brand, and usage status.",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        KanoButton(
+                            onClick = { },
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                        ) {
+                            Icon(Icons.Outlined.QrCodeScanner, contentDescription = null)
+                            Spacer(Modifier.width(4.dp))
+                            Text("Scan", maxLines = 1)
+                        }
+                        KanoOutlinedButton(
+                            onClick = { },
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                        ) {
+                            Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
+                            Spacer(Modifier.width(4.dp))
+                            Text("Photo", maxLines = 1)
+                        }
+                        KanoOutlinedButton(
+                            onClick = { },
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                        ) {
+                            Icon(Icons.Outlined.UploadFile, contentDescription = null)
+                            Spacer(Modifier.width(4.dp))
+                            Text("Upload", maxLines = 1)
+                        }
+                    }
+                }
+            }
+
+            // What Do I Need? Anti-Overspending Check Card
+            item {
+                KanoGlassCard(glassColor = KanoPeachContainer.copy(alpha = 0.88f)) {
+                    Text(
+                        text = "Inventory Need Check",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
-                }
-                Text(
-                    text = "Scan product label or upload photo to auto-detect category, brand, and usage status.",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                    Spacer(Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        StatusChip("NO PURCHASE NEEDED", containerColor = Color(0xFF2E6B38), contentColor = Color.White)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Cleanser & Shampoo in stock",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Text(
+                        text = "You already own 2 active skincare cleansers. No new facial cleanser required.",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
 
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        StatusChip("POTENTIAL GAP", containerColor = MaterialTheme.colorScheme.error, contentColor = Color.White)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Sunscreen SPF 50 is running low (~15%)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+
+            // Personal Inventory List Header
+            item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    KanoButton(
-                        onClick = { },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                    ) {
-                        Icon(Icons.Outlined.QrCodeScanner, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Scan", maxLines = 1)
-                    }
-                    KanoOutlinedButton(
-                        onClick = { },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                    ) {
-                        Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Photo", maxLines = 1)
-                    }
-                    KanoOutlinedButton(
-                        onClick = { },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                    ) {
-                        Icon(Icons.Outlined.UploadFile, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Upload", maxLines = 1)
-                    }
-                }
-            }
-        }
-
-        // What Do I Need? Anti-Overspending Card
-        item {
-            KanoCard(backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh) {
-                Text(
-                    text = "Inventory Need Check",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(Modifier.height(6.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    StatusChip("NO PURCHASE NEEDED", containerColor = Color(0xFF2E6B38), contentColor = Color.White)
-                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "Cleanser & Shampoo in stock",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        text = "My Product Inventory",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f),
                     )
-                }
-                Text(
-                    text = "You already own 2 active skincare cleansers. No new facial cleanser required.",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    StatusChip("POTENTIAL GAP", containerColor = MaterialTheme.colorScheme.error, contentColor = Color.White)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "Sunscreen SPF 50 is running low (~15%)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
+                    StatusChip("${items.size} ITEMS")
                 }
             }
-        }
 
-        // Personal Inventory List Header
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "My Product Inventory",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f),
-                )
-                StatusChip("${items.size} ITEMS")
+            // Items List
+            items(items, key = { it.name }) { item ->
+                ProductInventoryCard(item)
             }
-        }
-
-        // Items List
-        items(items, key = { it.name }) { item ->
-            ProductInventoryCard(item)
         }
     }
 }
@@ -186,13 +191,13 @@ private fun ProductInventoryCard(item: PersonalCareItem) {
         else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
     }
 
-    KanoCard {
+    KanoGlassCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.name,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                 )
                 Text(
                     text = "${item.brand} · ${item.category}",

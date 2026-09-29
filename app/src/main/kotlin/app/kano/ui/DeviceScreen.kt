@@ -69,9 +69,9 @@ fun DeviceScreen(state: DeviceState, refresh: () -> Unit) {
                 val usedBytes = data.storageTotal - data.storageAvailable
                 val usedPercent = if (data.storageTotal > 0) ((usedBytes.toDouble() / data.storageTotal) * 100).toInt() else 0
 
-                // Storage Card
+                // Premium Storage Card with Oversized Percentage
                 item {
-                    KanoCard {
+                    KanoCard(cornerRadius = 24.dp) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 Icons.Outlined.SdCard,
@@ -80,46 +80,59 @@ fun DeviceScreen(state: DeviceState, refresh: () -> Unit) {
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = "Storage",
+                                text = "Storage Volume",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.weight(1f),
                             )
                             StatusChip("$usedPercent% USED")
                         }
+
+                        // Oversized Large Display Number
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = "$usedPercent%",
+                            style = MaterialTheme.typography.displayMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+
                         Spacer(Modifier.height(8.dp))
                         LinearProgressIndicator(
                             progress = { (usedPercent / 100f).coerceIn(0f, 1f) },
-                            modifier = Modifier.fillMaxWidth().height(8.dp),
+                            modifier = Modifier.fillMaxWidth().height(10.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
                         )
-                        Spacer(Modifier.height(8.dp))
+
+                        Spacer(Modifier.height(10.dp))
                         Text(
-                            text = "${Formatter.formatFileSize(context, data.storageAvailable)} available of ${Formatter.formatFileSize(context, data.storageTotal)}",
-                            style = MaterialTheme.typography.bodyMedium,
+                            text = "${Formatter.formatFileSize(context, data.storageAvailable)} free of ${Formatter.formatFileSize(context, data.storageTotal)} total",
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             text = "Measured on the internal storage volume containing Kano. Not a scan of your private files.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
+                            modifier = Modifier.padding(top = 2.dp, bottom = 10.dp),
                         )
                         KanoOutlinedButton(
                             onClick = { showDetailedUsage = !showDetailedUsage },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(if (showDetailedUsage) "Hide detailed usage" else "Detailed usage")
+                            Text(if (showDetailedUsage) "Hide detailed usage" else "Detailed usage breakdown")
                         }
 
                         if (showDetailedUsage) {
                             Spacer(Modifier.height(8.dp))
                             FactRow("Used Volume", Formatter.formatFileSize(context, usedBytes))
-                            FactRow("Free Space", Formatter.formatFileSize(context, data.storageAvailable))
+                            FactRow("Available Storage", Formatter.formatFileSize(context, data.storageAvailable))
                         }
                     }
                 }
 
-                // Memory Card
+                // Memory (RAM) Analytics Card
                 item {
                     KanoCard {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -137,17 +150,18 @@ fun DeviceScreen(state: DeviceState, refresh: () -> Unit) {
                             )
                             StatusChip("SNAPSHOT")
                         }
+
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = data.memoryAvailable?.let { Formatter.formatFileSize(context, it) + " available" } ?: "Memory snapshot unavailable",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
                         )
                         Text(
                             text = "System snapshot. Android manages cached memory automatically; clearing RAM is not a performance gain.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
+                            modifier = Modifier.padding(top = 2.dp, bottom = 10.dp),
                         )
                         KanoOutlinedButton(
                             onClick = { showProcessInfo = !showProcessInfo },
@@ -189,46 +203,49 @@ fun DeviceScreen(state: DeviceState, refresh: () -> Unit) {
                                 false -> "Not charging"
                                 null -> "Charging state unavailable"
                             },
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
                         )
                     }
                 }
 
-                // Attention Section (Things worth checking)
+                // Attention Section (2 items worth checking)
                 item {
-                    KanoCard(backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                    KanoCard(backgroundColor = MaterialTheme.colorScheme.primaryContainer) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 Icons.Outlined.WarningAmber,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 text = "Attention Needed",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.weight(1f),
                             )
                             StatusChip("2 ITEMS")
                         }
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "1. Storage volume is $usedPercent% full. Consider reviewing media or downloads.",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium,
+                            text = "1. Storage volume is $usedPercent% full. Consider reviewing large media files.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         Text(
-                            text = "2. Selected media index has unindexed items queued for background scanning.",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium,
+                            text = "2. Selected media index has queued items waiting for scanning.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(top = 4.dp),
                         )
                     }
                 }
 
-                // Model & Android Build Card
+                // Specs Card
                 item {
                     KanoCard {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -239,7 +256,7 @@ fun DeviceScreen(state: DeviceState, refresh: () -> Unit) {
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = "Device & OS Specifications",
+                                text = "Device Specs",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                             )
