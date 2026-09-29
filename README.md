@@ -2,7 +2,7 @@
 
 Private, native Android personal assistant. This repository is the **0.1.0-dev development foundation**, working toward Kano 1.0 (Device + Media). It is not a production release.
 
-Available: real storage/memory/battery snapshots, explicit image/video selection, persisted read grants, local Room metadata index, bounded SHA-256 indexing through WorkManager, filename search, stop/retry, hardware Keystore credential encryption, and confirmed index forgetting. No original file deletion, Internet permission, analytics, AI provider, or connected account.
+Available: manual Care inventory with add/edit/confirmed delete, saved light/dark/system theme and glass/reduced-motion preferences, real storage/memory/battery snapshots, explicit image/video selection, persisted read grants, local Room metadata index, bounded SHA-256 indexing through WorkManager, filename search, stop/retry, Android Keystore credential encryption, and confirmed index forgetting. No original file deletion, Internet permission, analytics, AI provider, or connected account.
 
 Read [status and validation](docs/STATUS.md), [state](docs/KANO_STATE.md), [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [privacy matrix](docs/PRIVACY-MATRIX.md), and [risks](docs/RISKS.md).
 

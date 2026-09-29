@@ -1,27 +1,15 @@
-# KANO — Security & Privacy Architecture
+# Security model
 
----
+No INTERNET permission, broad storage permission, notification listener or accessibility
+service. The selected-document picker supplies only user-granted URI access.
+Backup/transfer exclusions remain; they are not a promise against every device threat.
 
-## 1. Local-First Boundary
+Room metadata and manual Care inventory use the app-private database directory.
+They are NOT stored in noBackupFilesDir and are NOT separately database-encrypted.
+Credential ciphertext alone uses noBackupFilesDir; encryption keys remain in Android
+Keystore. AES-GCM authenticates the provider slot/version, with bounded atomic records,
+random IVs and typed failures. Hardware backing depends on the device; no guarantee.
 
-- **Manifest Boundaries**: `AndroidManifest.xml` contains **zero `INTERNET` permission**.
-- **Backup & Extraction**: `android:allowBackup="false"` and data extraction rules explicitly disable cloud backup or ADB device-to-device transfers.
-- **App Storage**: Database and encrypted keys reside exclusively within private app sandbox directories (`context.noBackupFilesDir`).
-
----
-
-## 2. Hardware Keystore Encryption
-
-- **Algorithm**: AES-256-GCM (`AES/GCM/NoPadding`).
-- **Key Store**: Android Keystore with `KeyGenParameterSpec` (`PURPOSE_ENCRYPT` \| `PURPOSE_DECRYPT`).
-- **Authenticated Additional Data (AAD)**: Each secret payload is bound to `kano:credential:1:<slot.name>` to prevent cross-slot replacement or tampering.
-- **Nonce Integrity**: Random 12-byte initialization vectors generated per encryption operation.
-- **File Writes**: Handled atomically using `AtomicFile` to prevent partial or corrupted writes.
-
----
-
-## 3. Privacy Firewall
-
-- **Fail-Closed Verification**: Data is assumed sensitive until evaluated by `PrivacyFirewall`.
-- **Sensitive Detection**: Automatically flags passwords, tokens, API keys, financial data, and personal IDs.
-- **Consent Contract**: Every external AI or network request requires unexpired, request-bound user consent specifying payload hash, provider ID, purpose, and capability.
+Text firewall heuristics reject unknown/sensitive data and require bound consent for
+cloud use. They are not complete DLP. No live provider exists and no private content is
+sent in this build. No OAuth tokens or personal credentials were accessed during recovery.

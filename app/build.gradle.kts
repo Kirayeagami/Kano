@@ -16,6 +16,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true; buildConfig = true }
+    // Match Android Studio and command-line debug signing on this development machine.
+    signingConfigs.getByName("debug") {
+        storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -25,6 +29,10 @@ android {
     sourceSets["androidTest"].assets.srcDir("schemas")
 }
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
+// Include a newly exported schema even on the first build after a version change.
+tasks.matching { it.name == "mergeDebugAndroidTestAssets" }.configureEach {
+    dependsOn("kspDebugKotlin")
+}
 dependencies {
     implementation(project(":core"))
     implementation(platform("androidx.compose:compose-bom:2025.04.01"))

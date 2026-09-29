@@ -1,12 +1,8 @@
 # KANO architecture
 
-## Reconnaissance — 2026-09-29
-E:\Works has Kolpo House web projects and assets, but no Kano repository, Kotlin source,
-Gradle files, Android manifests, tests, or Android toolchain. The workspace root is not
-a Git repository. Existing web projects are independent and preserved. The supplied
-hosted design reference could not be retrieved by the web tool. Local Kolpo House CSS
-and reference analysis show paper/wine/ink, editorial hierarchy, restrained decoration,
-and responsive layouts. Those principles inform Kano; its Android interactions are native.
+## Recovery — 2026-09-29
+Existing project recovered at 7774400 (origin/main verified). The seven supplied mobile
+references replace earlier visual guidance. See KANO_STATE.md for source-verified audit.
 
 ## Implementation decision
 Kotlin + Compose + Navigation Compose + Room + WorkManager; minimum API 26, initial
@@ -48,9 +44,8 @@ documents retain metadata and an explicit hash-skipped state. Results are paged 
 Each refresh rechecks permission. Revoked rows have identifying metadata cleared; users
 can forget the index and release only Kano's document grants. Original files are untouched.
 
-Room schema version 1 is exported and checked in. Never use destructive fallback.
-No migration exists before a second schema; future changes require migration and upgrade
-tests. Metadata rests in the Android app sandbox protected by device storage encryption;
+Room schema versions 1 and 2 are exported. Migration 1 → 2 adds care_items without
+modifying media. Migration and reopen tests verify preservation. Never use destructive fallback. Metadata rests in the Android app sandbox protected by device storage encryption;
 there is no additional database encryption. Backup and device transfer are disabled.
 Credentials and sensitive knowledge records are not accepted in this slice.
 
@@ -83,3 +78,10 @@ retention controls, response validation, timeout/cancellation, and contract test
 - [Photo picker](https://developer.android.com/training/data-storage/shared/photo-picker)
 - [Shared media and deletion requests](https://developer.android.com/training/data-storage/shared/media)
 - [Compose compiler plugin](https://kotlinlang.org/docs/whatsnew20.html)
+
+## Manual Care inventory
+CareRepository validates bounded user inputs and uses a transaction for the 200-item cap.
+Updates fail if a record disappeared; deletion is idempotent. Flow state distinguishes
+loading, failure and actual rows. Editors retain drafts across activity recreation with
+rememberSaveable and close only after persistence succeeds. Sensitive medical records are not supported.
+Migration reference: https://developer.android.com/training/data-storage/room/migrating-db-versions

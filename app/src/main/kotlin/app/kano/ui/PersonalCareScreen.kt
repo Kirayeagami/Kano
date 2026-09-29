@@ -1,217 +1,121 @@
 package app.kano.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.PhotoCamera
-import androidx.compose.material.icons.outlined.QrCodeScanner
-import androidx.compose.material.icons.outlined.Sanitizer
-import androidx.compose.material.icons.outlined.UploadFile
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.kano.data.CareRecord
+import app.kano.data.CareStatus
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 
-data class PersonalCareItem(
-    val name: String,
-    val category: String,
-    val brand: String,
-    val status: String,
-    val detail: String,
-)
-
-@Composable
-fun PersonalCareScreen() {
-    val items = listOf(
-        PersonalCareItem("Gentle Hydrating Cleanser", "Skincare", "CeraVe", "ACTIVE", "200ml · ~70% remaining"),
-        PersonalCareItem("Daily Sunscreen SPF 50", "Skincare", "Neutrogena", "LOW", "50ml · ~15% remaining · Reorder soon"),
-        PersonalCareItem("Nourishing Hair Shampoo", "Hair Care", "L'Oreal", "ACTIVE", "300ml · ~60% remaining"),
-        PersonalCareItem("Precision Beard Trimmer", "Grooming", "Philips", "ACTIVE", "Battery 80% · Cleaned"),
-        PersonalCareItem("Woody Eau De Parfum", "Fragrance", "Zara", "NEARLY EMPTY", "100ml · ~5% remaining"),
-        PersonalCareItem("Mint Fluoride Toothpaste", "Oral Care", "Colgate", "ACTIVE", "150g · ~50% remaining"),
-    )
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        KanoWaveBackground(waveColor = KanoGreenContainer.copy(alpha = 0.4f))
-
-        LazyColumn(
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            item {
-                SectionTitle(
-                    title = "Personal Care & Lifestyle",
-                    detail = "Track personal care products, manage routines, and prevent duplicate or unnecessary purchases.",
-                )
-            }
-
-            // Product Scanner & Add Actions Glass Card
-            item {
-                KanoGlassCard(cornerRadius = 24.dp) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Sanitizer,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "Add / Scan Personal Product",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                    Text(
-                        text = "Scan product label or upload photo to auto-detect category, brand, and usage status.",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        KanoButton(
-                            onClick = { },
-                            modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                        ) {
-                            Icon(Icons.Outlined.QrCodeScanner, contentDescription = null)
-                            Spacer(Modifier.width(4.dp))
-                            Text("Scan", maxLines = 1)
-                        }
-                        KanoOutlinedButton(
-                            onClick = { },
-                            modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                        ) {
-                            Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
-                            Spacer(Modifier.width(4.dp))
-                            Text("Photo", maxLines = 1)
-                        }
-                        KanoOutlinedButton(
-                            onClick = { },
-                            modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                        ) {
-                            Icon(Icons.Outlined.UploadFile, contentDescription = null)
-                            Spacer(Modifier.width(4.dp))
-                            Text("Upload", maxLines = 1)
-                        }
-                    }
-                }
-            }
-
-            // What Do I Need? Anti-Overspending Check Card
-            item {
-                KanoGlassCard(glassColor = KanoPeachContainer.copy(alpha = 0.88f)) {
-                    Text(
-                        text = "Inventory Need Check",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        StatusChip("NO PURCHASE NEEDED", containerColor = Color(0xFF2E6B38), contentColor = Color.White)
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "Cleanser & Shampoo in stock",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                    Text(
-                        text = "You already own 2 active skincare cleansers. No new facial cleanser required.",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        StatusChip("POTENTIAL GAP", containerColor = MaterialTheme.colorScheme.error, contentColor = Color.White)
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "Sunscreen SPF 50 is running low (~15%)",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                }
-            }
-
-            // Personal Inventory List Header
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "My Product Inventory",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f),
-                    )
-                    StatusChip("${items.size} ITEMS")
-                }
-            }
-
-            // Items List
-            items(items, key = { it.name }) { item ->
-                ProductInventoryCard(item)
-            }
-        }
-    }
+sealed interface CareState {
+    data object Loading : CareState
+    data object Failed : CareState
+    data class Ready(val items: List<CareRecord>) : CareState
 }
 
+fun Flow<List<CareRecord>>.mapCareState(): Flow<CareState> =
+    map<List<CareRecord>, CareState> { CareState.Ready(it) }.catch { emit(CareState.Failed) }
+
 @Composable
-private fun ProductInventoryCard(item: PersonalCareItem) {
-    val (chipBg, chipFg) = when (item.status) {
-        "LOW", "NEARLY EMPTY" -> MaterialTheme.colorScheme.error to Color.White
-        "ACTIVE" -> Color(0xFF2E6B38) to Color.White
-        "EMPTY", "EXPIRED" -> MaterialTheme.colorScheme.outline to Color.White
-        else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+fun PersonalCareScreen(model: KanoViewModel? = null) {
+    val state = model?.careItems?.collectAsStateWithLifecycle()?.value ?: CareState.Ready(emptyList())
+    val saving = model?.careSaving?.collectAsStateWithLifecycle()?.value ?: false
+    val error = model?.careError?.collectAsStateWithLifecycle()?.value
+    var editing by rememberSaveable { mutableStateOf(false) }
+    var editingId by rememberSaveable { mutableStateOf<String?>(null) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var category by rememberSaveable { mutableStateOf("") }
+    var status by rememberSaveable { mutableStateOf(CareStatus.UNKNOWN.name) }
+    var deleteId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item { SectionTitle("Personal Care", "Your products, recorded by you. Saved only on this device.") }
+        item {
+            KanoGlassCard {
+                Text("Keep track of what you own", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                Text("Add a name, category and status. Quantities, expiry dates and purchase needs are never guessed.")
+                Spacer(Modifier.height(12.dp))
+                KanoButton(onClick = {
+                    editingId = null; name = ""; category = ""; status = CareStatus.UNKNOWN.name
+                    model?.careError?.value = null; editing = true
+                }, enabled = model != null && state is CareState.Ready && !saving &&
+                    (state as? CareState.Ready)?.items.orEmpty().size < 200) { Text("Add product") }
+                Text("Manual entry · Up to 200 products · Scanning unavailable", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        when (state) {
+            CareState.Loading -> item { Text("Loading your inventory…") }
+            CareState.Failed -> item { Text("Inventory could not be read. Reopen Kano to retry. No records were removed.") }
+            is CareState.Ready -> {
+                if (state.items.isEmpty()) item {
+                    KanoGlassCard {
+                        Text("No products saved", style = MaterialTheme.typography.titleMedium)
+                        Text("Start with a product you already use. There is no sample inventory.")
+                    }
+                }
+                items(state.items, key = { it.id }) { product ->
+                    KanoGlassCard {
+                        Text(product.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        if (product.category.isNotBlank()) Text(product.category)
+                        Text("Status: " + (CareStatus.entries.find { it.name == product.status }?.label ?: "Unknown"))
+                        Text("Entered by you", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(enabled = !saving, onClick = {
+                                editingId = product.id; name = product.name; category = product.category
+                                status = product.status; model?.careError?.value = null; editing = true
+                            }) { Text("Edit") }
+                            TextButton(enabled = !saving, onClick = { model?.careError?.value = null; deleteId = product.id }) { Text("Delete") }
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    KanoGlassCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = "${item.brand} · ${item.category}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+    if (editing) AlertDialog(
+        onDismissRequest = { if (!saving) editing = false },
+        title = { Text(if (editingId == null) "Add product" else "Edit product") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(value = name, onValueChange = { name = it.take(120) }, label = { Text("Product name") },
+                    supportingText = { Text("Required · 120 characters maximum") }, enabled = !saving, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = category, onValueChange = { category = it.take(60) }, label = { Text("Category (optional)") },
+                    enabled = !saving, modifier = Modifier.fillMaxWidth())
+                Text("Status · your assessment", fontWeight = FontWeight.Bold)
+                CareStatus.entries.forEach { option ->
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        RadioButton(selected = status == option.name, onClick = { status = option.name }, enabled = !saving)
+                        TextButton(onClick = { status = option.name }, enabled = !saving) { Text(option.label) }
+                    }
+                }
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
-            StatusChip(text = item.status, containerColor = chipBg, contentColor = chipFg)
-        }
-        Text(
-            text = item.detail,
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(top = 6.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
+        },
+        confirmButton = {
+            TextButton(enabled = !saving && name.isNotBlank(), onClick = {
+                model?.saveCare(editingId, name, category, CareStatus.entries.find { it.name == status } ?: CareStatus.UNKNOWN) { editing = false }
+            }) { Text(if (saving) "Saving…" else "Save product") }
+        },
+        dismissButton = { TextButton(enabled = !saving, onClick = { editing = false }) { Text("Cancel") } },
+    )
+
+    if (deleteId != null) AlertDialog(
+        onDismissRequest = { if (!saving) deleteId = null },
+        title = { Text("Delete saved product?") },
+        text = { Column { Text("Remove this manually entered record from Kano. This cannot be undone."); error?.let { Text(it) } } },
+        confirmButton = { TextButton(enabled = !saving, onClick = { deleteId?.let { model?.deleteCare(it) { deleteId = null } } }) { Text("Delete product") } },
+        dismissButton = { TextButton(enabled = !saving, onClick = { deleteId = null }) { Text("Keep product") } },
+    )
 }

@@ -10,6 +10,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import app.kano.AppGraph
 import app.kano.data.MediaRecord
 import app.kano.data.MediaRepository
+import app.kano.data.CareRecord
+import app.kano.data.CareStatus
 import app.kano.platform.DeviceSnapshot
 import app.kano.platform.MediaIndexWorker
 import kotlinx.coroutines.CancellationException
@@ -57,6 +59,32 @@ class KanoViewModel(private val graph: AppGraph) : ViewModel() {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val themeMode = graph.themeManager.themeMode
+    val glass = graph.themeManager.glass
+    val reducedMotion = graph.themeManager.reducedMotion
+    fun setGlass(enabled: Boolean) = graph.themeManager.setGlass(enabled)
+    fun setReducedMotion(enabled: Boolean) = graph.themeManager.setReducedMotion(enabled)
+    val careItems = graph.care.items.mapCareState()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CareState.Loading)
+    val careSaving = MutableStateFlow(false)
+    val careError = MutableStateFlow<String?>(null)
+
+    fun saveCare(id: String?, name: String, category: String, status: CareStatus, done: () -> Unit) = careMutation(done) {
+        graph.care.save(id, name, category, status)
+    }
+
+    fun deleteCare(id: String, done: () -> Unit) = careMutation(done) { graph.care.delete(id) }
+
+    private fun careMutation(done: () -> Unit, action: suspend () -> Unit) {
+        if (careSaving.value) return
+        careSaving.value = true
+        careError.value = null
+        viewModelScope.launch {
+            try { action(); done() }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { careError.value = "Could not save this change. Your form is kept; retry. Inventory limit: 200 items." }
+            finally { careSaving.value = false }
+        }
+    }
     fun setThemeMode(mode: KanoThemeMode) { graph.themeManager.setThemeMode(mode) }
 
     init { refreshDevice() }

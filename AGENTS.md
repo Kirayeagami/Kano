@@ -13,7 +13,8 @@ Use PascalCase types and camelCase members. Promote feature packages to Gradle m
 when ownership/build isolation warrants it; do not create empty modules for the roadmap.
 
 ## UI and accessibility
-Warm paper, wine accent, ink text, restrained 4–8 dp corners. Reusable theme/components.
+Follow the supplied mobile references: bright/warm surfaces, coral accents, rounded cards,
+clear typography and a separately tuned charcoal dark theme. Reusable theme/components.
 Concrete labels, 48 dp controls, TalkBack semantics, scrollable small-screen layouts,
 font scaling, loading/empty/error/revoked states. Inspect the actual Android UI before
 claiming visual validation. Never fill screens with fake cards or nonworking buttons.

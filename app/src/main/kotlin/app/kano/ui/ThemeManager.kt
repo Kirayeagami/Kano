@@ -16,6 +16,17 @@ class ThemeManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("kano_theme_prefs", Context.MODE_PRIVATE)
     private val _themeMode = MutableStateFlow(readSavedTheme())
     val themeMode: StateFlow<KanoThemeMode> = _themeMode.asStateFlow()
+    private val _glass = MutableStateFlow(prefs.getBoolean("glass", true))
+    val glass: StateFlow<Boolean> = _glass.asStateFlow()
+    private val _reducedMotion = MutableStateFlow(prefs.getBoolean("reduced_motion", false))
+    val reducedMotion: StateFlow<Boolean> = _reducedMotion.asStateFlow()
+
+    fun setGlass(enabled: Boolean) {
+        prefs.edit().putBoolean("glass", enabled).apply(); _glass.value = enabled
+    }
+    fun setReducedMotion(enabled: Boolean) {
+        prefs.edit().putBoolean("reduced_motion", enabled).apply(); _reducedMotion.value = enabled
+    }
 
     fun setThemeMode(mode: KanoThemeMode) {
         prefs.edit().putString(KEY_THEME_MODE, mode.name).apply()

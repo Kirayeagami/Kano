@@ -42,281 +42,54 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.kano.BuildConfig
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
-fun HomeScreen(
-    openDevice: () -> Unit,
-    openMedia: () -> Unit,
-    openStyle: () -> Unit,
-    openPersonalCare: () -> Unit,
-) {
-    var isAssembled by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { isAssembled = true }
-
-    Box(modifier = Modifier.fillMaxSize()) {
+fun HomeScreen(openDevice: () -> Unit, openMedia: () -> Unit, openStyle: () -> Unit, openPersonalCare: () -> Unit) {
+    Box(Modifier.fillMaxSize()) {
         KanoWaveBackground()
-
-        LazyColumn(
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            // Greeting & Oversized Display Heading
+        LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item {
-                AnimatedVisibility(
-                    visible = isAssembled,
-                    enter = fadeIn(tween(400)) + slideInVertically(tween(400)) { -it / 4 },
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                        Text(
-                            text = "Kano Assistant",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Text(
-                            text = "Your day,\nat a glance.",
-                            style = MaterialTheme.typography.displaySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.padding(top = 4.dp),
-                        )
-                        Text(
-                            text = "Local-first personal intelligence · Build ${BuildConfig.VERSION_NAME}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 6.dp),
-                        )
-                    }
+                Text("KANO / ON YOUR DEVICE", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                SectionTitle("Make room for\nwhat matters.", "Your device, selected media and the products you choose to record.")
+            }
+            item {
+                KanoGradientHero(startColor = MaterialTheme.colorScheme.primaryContainer, endColor = MaterialTheme.colorScheme.surface) {
+                    Text("Start with what is real", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(8.dp))
+                    Text("See a measured snapshot of storage, memory and battery. No optimizer scores or guessed alerts.")
+                    Spacer(Modifier.height(16.dp))
+                    KanoButton(onClick = openDevice, modifier = Modifier.fillMaxWidth()) { Text("View device readings") }
                 }
             }
-
-            // Hero Focus Card: "3 things need your attention" with Coral Gradient & Glass Overlay
-            item {
-                AnimatedVisibility(
-                    visible = isAssembled,
-                    enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 3 },
-                ) {
-                    KanoGradientHero(cornerRadius = 24.dp) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Outlined.Notifications,
-                                contentDescription = null,
-                                tint = Color.White,
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = "3 Things Need Your Attention",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                modifier = Modifier.weight(1f),
-                            )
-                            StatusChip("ACTION NEEDED", containerColor = Color.White, contentColor = KanoCoralGradientEnd)
-                        }
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = "• Storage volume is ~72% full. Review large media files.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
-                        )
-                        Text(
-                            text = "• Sunscreen SPF 50 is running low (~15% remaining).",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
-                            modifier = Modifier.padding(top = 4.dp),
-                        )
-                        Text(
-                            text = "• Selected media index has unindexed items queued.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
-                            modifier = Modifier.padding(top = 4.dp),
-                        )
-                        Spacer(Modifier.height(14.dp))
-                        KanoGlassSurface(
-                            cornerRadius = 16.dp,
-                            glassColor = Color.White.copy(alpha = 0.25f),
-                            borderColor = Color.White.copy(alpha = 0.4f),
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = "Resolve items now",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                KanoFloatingControl(
-                                    icon = Icons.Outlined.ChevronRight,
-                                    contentDescription = "Resolve",
-                                    onClick = openDevice,
-                                    size = 40.dp,
-                                    containerColor = Color.White,
-                                    contentColor = KanoCoralGradientEnd,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Section Overview Cards
-            item {
-                Text(
-                    text = "Intelligence Sections",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-            }
-
-            // Device Intelligence Snapshot Card
             item {
                 KanoGlassCard {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Outlined.Smartphone,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "Device Health & Storage",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f),
-                        )
-                        StatusChip("SNAPSHOT")
-                    }
-                    Text(
-                        text = "Storage: ~72% used · RAM: System snapshot · Battery: Charging",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    KanoOutlinedButton(
-                        onClick = openDevice,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text("View device analytics")
-                    }
+                    Text("Your media. Your choice.", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text("Select photos or videos for a local metadata and hash index. OCR, semantic categories and cleanup are not available yet.")
+                    Spacer(Modifier.height(12.dp))
+                    KanoOutlinedButton(onClick = openMedia, modifier = Modifier.fillMaxWidth()) { Text("Manage media index") }
                 }
             }
-
-            // Media & Documents Index Card
             item {
                 KanoGlassCard {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Outlined.PermMedia,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "Media & Documents Index",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f),
-                        )
-                        StatusChip("LOCAL ONLY")
-                    }
-                    Text(
-                        text = "Choose photos or videos to index. Kano calculates local SHA-256 hashes without copying your files.",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    KanoOutlinedButton(
-                        onClick = openMedia,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text("Manage media index")
-                    }
+                    Text("Use what you own", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text("Keep a personal care inventory using your own entries and status updates.")
+                    Spacer(Modifier.height(12.dp))
+                    KanoOutlinedButton(onClick = openPersonalCare, modifier = Modifier.fillMaxWidth()) { Text("Open Personal Care") }
+                    KanoOutlinedButton(onClick = openStyle, modifier = Modifier.fillMaxWidth()) { Text("Style Studio availability") }
                 }
             }
-
-            // Style Studio & Personal Care Entry Card
             item {
-                KanoGlassCard(glassColor = KanoLavenderContainer.copy(alpha = 0.85f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Outlined.Checkroom,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "Style Studio & Personal Care",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.weight(1f),
-                        )
-                        StatusChip("RECOMMENDED")
-                    }
-                    Text(
-                        text = "Today: Dark Wine Overshirt + Grey Trousers · 2 Care items low stock.",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f),
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        KanoButton(
-                            onClick = openStyle,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text("Style Studio")
-                        }
-                        KanoOutlinedButton(
-                            onClick = openPersonalCare,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text("Personal Care")
-                        }
-                    }
-                }
-            }
-
-            // Privacy Guarantee Badge Card
-            item {
-                KanoGlassCard(cornerRadius = 16.dp) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Outlined.Shield,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = "100% Local Privacy Guarantee",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Text(
-                                text = "Zero Internet permission · Local Room DB · Keystore AES-256 encrypted",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
+                KanoGlassCard {
+                    Text("Local by design", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("No Internet permission or connected AI services. The metadata and inventory database is app-private, without extra database encryption.")
+                    Text("Development build ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
     }
 }
-
 @Composable
 fun SettingsScreen(model: KanoViewModel? = null) {
     val currentThemeMode = model?.themeMode?.collectAsStateWithLifecycle()?.value ?: KanoThemeMode.SYSTEM
@@ -342,38 +115,26 @@ fun SettingsScreen(model: KanoViewModel? = null) {
                     modifier = Modifier.padding(top = 2.dp, bottom = 12.dp),
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    KanoOutlinedButton(
-                        onClick = { model?.setThemeMode(KanoThemeMode.SYSTEM) },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                    ) {
-                        Icon(Icons.Outlined.SettingsSuggest, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("System", maxLines = 1, fontWeight = if (currentThemeMode == KanoThemeMode.SYSTEM) FontWeight.Bold else FontWeight.Normal)
-                    }
-                    KanoOutlinedButton(
-                        onClick = { model?.setThemeMode(KanoThemeMode.LIGHT) },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                    ) {
-                        Icon(Icons.Outlined.LightMode, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Light", maxLines = 1, fontWeight = if (currentThemeMode == KanoThemeMode.LIGHT) FontWeight.Bold else FontWeight.Normal)
-                    }
-                    KanoOutlinedButton(
-                        onClick = { model?.setThemeMode(KanoThemeMode.DARK) },
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                    ) {
-                        Icon(Icons.Outlined.DarkMode, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Dark", maxLines = 1, fontWeight = if (currentThemeMode == KanoThemeMode.DARK) FontWeight.Bold else FontWeight.Normal)
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    KanoThemeMode.entries.forEach { mode ->
+                        KanoOutlinedButton(onClick = { model?.setThemeMode(mode) }, modifier = Modifier.fillMaxWidth()) {
+                            Text((if (mode == currentThemeMode) "Selected · " else "") + mode.name.lowercase().replaceFirstChar { it.uppercase() })
+                        }
                     }
                 }
+                val glass = model?.glass?.collectAsStateWithLifecycle()?.value ?: true
+                val reducedMotion = model?.reducedMotion?.collectAsStateWithLifecycle()?.value ?: false
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Glass surfaces", modifier = Modifier.weight(1f))
+                    androidx.compose.material3.Switch(checked = glass, onCheckedChange = { model?.setGlass(it) },
+                        modifier = Modifier.semantics { contentDescription = "Glass surfaces" })
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Reduce motion", modifier = Modifier.weight(1f))
+                    androidx.compose.material3.Switch(checked = reducedMotion, onCheckedChange = { model?.setReducedMotion(it) },
+                        modifier = Modifier.semantics { contentDescription = "Reduce motion" })
+                }
+                Text("Glass changes surface transparency. Reduce motion stops ambient waves. Android's disabled animations are also respected.", style = MaterialTheme.typography.bodySmall)
             }
         }
 

@@ -9,6 +9,8 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
 import kotlinx.coroutines.flow.Flow
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Entity(tableName = "media")
 data class MediaRecord(
@@ -47,7 +49,16 @@ interface MediaDao {
     suspend fun clear()
 }
 
-@Database(entities = [MediaRecord::class], version = 1, exportSchema = true)
+@Database(entities = [MediaRecord::class, CareRecord::class], version = 2, exportSchema = true)
 abstract class KanoDatabase : RoomDatabase() {
     abstract fun media(): MediaDao
+    abstract fun care(): CareDao
+
+    companion object {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS care_items (id TEXT NOT NULL, name TEXT NOT NULL, category TEXT NOT NULL, status TEXT NOT NULL, updatedAt INTEGER NOT NULL, PRIMARY KEY(id))")
+            }
+        }
+    }
 }

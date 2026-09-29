@@ -17,10 +17,11 @@ class NavigationTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
     @Test fun homeLeadsToRealDeviceReadingsAndScopedMedia() {
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText("View device readings"))
         compose.onNodeWithText("View device readings").performClick()
-        compose.waitUntil(timeoutMillis = 10_000) { compose.onAllNodes(androidx.compose.ui.test.hasText("Available storage")).fetchSemanticsNodes().isNotEmpty() }
-        compose.onNode(hasScrollAction()).performScrollToNode(hasText("Refresh readings"))
-        compose.onNodeWithText("Refresh readings").assertIsDisplayed()
+        compose.waitUntil(timeoutMillis = 10_000) { compose.onAllNodes(hasText("Storage Volume")).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText("Refresh device readings"))
+        compose.onNodeWithText("Refresh device readings").assertIsDisplayed()
         compose.onNodeWithText("Media", useUnmergedTree = true).performClick()
         compose.onNode(hasText("Media") and hasClickAction()).assertIsSelected()
         compose.onNode(hasScrollAction()).performScrollToNode(hasText("Choose photos or videos"))

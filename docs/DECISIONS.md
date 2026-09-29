@@ -24,3 +24,6 @@
 - **Decision**: Use `ACTION_OPEN_DOCUMENT` and `takePersistableUriPermission`.
 - **Reason**: Avoids requesting broad `READ_EXTERNAL_STORAGE` or `READ_MEDIA_*` permissions, aligning with privacy-first principle.
 - **Consequences**: User explicitly selects files; max 100 documents initially.
+
+## Recovery decisions
+Prioritize truthful behavior over decorative completion claims. Implement bounded manual Care storage because the exposed inventory was fabricated. Defer Style analysis and cloud integrations until working adapters exist. Use migration 1→2, never destructive fallback. Match IDE/CLI debug signing via the current user's standard debug keystore; no keystore is committed. Theme colors are scoped to composition; opaque dark cards and reduced ambient motion take precedence over decoration.

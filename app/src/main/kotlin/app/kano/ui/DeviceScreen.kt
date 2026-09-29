@@ -167,13 +167,13 @@ fun DeviceScreen(state: DeviceState, refresh: () -> Unit) {
                             onClick = { showProcessInfo = !showProcessInfo },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(if (showProcessInfo) "Hide process information" else "Process information")
+                            Text(if (showProcessInfo) "Hide memory explanation" else "About this memory reading")
                         }
 
                         if (showProcessInfo) {
                             Spacer(Modifier.height(8.dp))
                             FactRow("Memory Policy", "Android OS Automatic Cache Management")
-                            FactRow("App Sandbox", "Kano processes memory off main thread in background")
+                            FactRow("App Sandbox", "No process inventory is collected")
                         }
                     }
                 }
@@ -205,42 +205,6 @@ fun DeviceScreen(state: DeviceState, refresh: () -> Unit) {
                             },
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                        )
-                    }
-                }
-
-                // Attention Section (2 items worth checking)
-                item {
-                    KanoCard(backgroundColor = MaterialTheme.colorScheme.primaryContainer) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Outlined.WarningAmber,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = "Attention Needed",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.weight(1f),
-                            )
-                            StatusChip("2 ITEMS")
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = "1. Storage volume is $usedPercent% full. Consider reviewing large media files.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                        Text(
-                            text = "2. Selected media index has queued items waiting for scanning.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(top = 4.dp),
                         )
                     }
                 }

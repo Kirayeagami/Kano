@@ -67,16 +67,15 @@ val KanoPeachContainerDark = Color(0xFF3D1B13)
 val KanoLavenderContainerDark = Color(0xFF2A263B)
 val KanoGreenContainerDark = Color(0xFF1C3322)
 
-// Dynamic Color Holders for Motion/Wave Systems
-var KanoPeachContainer = KanoPeachContainerLight
-var KanoLavenderContainer = KanoLavenderContainerLight
-var KanoGreenContainer = KanoGreenContainerLight
-var KanoCoralGradientStart = KanoCoralGradientStartLight
-var KanoCoralGradientEnd = KanoCoralGradientEndLight
-var KanoCoralPrimary = KanoCoralPrimaryLight
-
+// Composition-scoped tokens: simultaneous light/dark previews cannot mutate each other.
+val KanoPeachContainer: Color @Composable get() = MaterialTheme.colorScheme.primaryContainer
+val KanoLavenderContainer: Color @Composable get() = MaterialTheme.colorScheme.secondaryContainer
+val KanoGreenContainer: Color @Composable get() = MaterialTheme.colorScheme.tertiaryContainer
+val KanoCoralGradientStart: Color @Composable get() = MaterialTheme.colorScheme.primary
+val KanoCoralGradientEnd: Color @Composable get() = MaterialTheme.colorScheme.primary
+val KanoCoralPrimary: Color @Composable get() = MaterialTheme.colorScheme.primary
 private val KanoLightColors = lightColorScheme(
-    primary = KanoCoralPrimaryLight,
+    primary = Color(0xFFB83216),
     onPrimary = Color.White,
     background = KanoOffWhiteBgLight,
     onBackground = KanoInkPrimaryLight,
@@ -93,6 +92,7 @@ private val KanoLightColors = lightColorScheme(
     onPrimaryContainer = Color(0xFF5A1407),
     secondary = Color(0xFF4A3E3D),
     onSecondary = Color.White,
+    tertiaryContainer = KanoGreenContainerLight,
     secondaryContainer = KanoLavenderContainerLight,
     onSecondaryContainer = Color(0xFF231C38),
     outline = Color(0xFFD4CDC5),
@@ -117,6 +117,7 @@ private val KanoDarkColors = darkColorScheme(
     onPrimaryContainer = Color(0xFFFFD0C5),
     secondary = Color(0xFFD4C2BD),
     onSecondary = Color(0xFF2A201E),
+    tertiaryContainer = KanoGreenContainerDark,
     secondaryContainer = KanoLavenderContainerDark,
     onSecondaryContainer = Color(0xFFE2DCF8),
     outline = Color(0xFF48423B),
@@ -132,22 +133,6 @@ fun KanoTheme(
         KanoThemeMode.LIGHT -> false
         KanoThemeMode.DARK -> true
         KanoThemeMode.SYSTEM -> isSystemInDarkTheme()
-    }
-
-    if (darkTheme) {
-        KanoPeachContainer = KanoPeachContainerDark
-        KanoLavenderContainer = KanoLavenderContainerDark
-        KanoGreenContainer = KanoGreenContainerDark
-        KanoCoralGradientStart = KanoCoralGradientStartDark
-        KanoCoralGradientEnd = KanoCoralGradientEndDark
-        KanoCoralPrimary = KanoCoralPrimaryDark
-    } else {
-        KanoPeachContainer = KanoPeachContainerLight
-        KanoLavenderContainer = KanoLavenderContainerLight
-        KanoGreenContainer = KanoGreenContainerLight
-        KanoCoralGradientStart = KanoCoralGradientStartLight
-        KanoCoralGradientEnd = KanoCoralGradientEndLight
-        KanoCoralPrimary = KanoCoralPrimaryLight
     }
 
     val colors = if (darkTheme) KanoDarkColors else KanoLightColors
@@ -317,8 +302,8 @@ fun SectionTitle(title: String, detail: String) {
 @Composable
 fun FactRow(label: String, value: String, detail: String? = null) {
     Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+        Column(Modifier.fillMaxWidth()) {
+            Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)

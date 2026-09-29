@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.luminance
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import app.kano.ui.LocalGlassEnabled
+import app.kano.ui.LocalMotionEnabled
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -72,8 +81,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             val model: KanoViewModel = viewModel(factory = KanoViewModel.factory((application as KanoApplication).graph))
             val themeMode by model.themeMode.collectAsStateWithLifecycle()
+            val glass by model.glass.collectAsStateWithLifecycle()
+            val reducedMotion by model.reducedMotion.collectAsStateWithLifecycle()
+            val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
             KanoTheme(themeMode = themeMode) {
-                KanoApp(model)
+                val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+                SideEffect {
+                    val bars = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT) { dark }
+                    enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
+                }
+                CompositionLocalProvider(LocalGlassEnabled provides glass,
+                    LocalMotionEnabled provides (!reducedMotion && lifecycleState.isAtLeast(Lifecycle.State.RESUMED) && android.animation.ValueAnimator.areAnimatorsEnabled())) {
+                    KanoApp(model)
+                }
             }
         }
     }
@@ -96,7 +116,7 @@ fun KanoApp(model: KanoViewModel) {
         NavDestination("settings", "Privacy", Icons.Outlined.Shield),
     )
 
-    val navigationColumns = if (LocalDensity.current.fontScale >= 1.5f) 3 else 6
+    val navigationColumns = if (LocalDensity.current.fontScale >= 1.5f) 2 else 3
 
     LaunchedEffect(message) {
         message?.let { snackbars.showSnackbar(it); model.message.value = null }
@@ -125,7 +145,7 @@ fun KanoApp(model: KanoViewModel) {
                     shape = RoundedCornerShape(28.dp),
                     color = MaterialTheme.colorScheme.surface,
                     shadowElevation = 6.dp,
-                    border = BorderStroke(1.dp, Color.Black.copy(alpha = 0.08f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
                 ) {
                     Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
                         destinations.chunked(navigationColumns).forEach { rowDestinations ->
@@ -150,7 +170,7 @@ fun KanoApp(model: KanoViewModel) {
                                         ) {
                                             Icon(
                                                 imageVector = dest.icon,
-                                                contentDescription = dest.label,
+                                                contentDescription = null,
                                                 tint = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
                                             Spacer(Modifier.height(2.dp))
@@ -182,7 +202,7 @@ fun KanoApp(model: KanoViewModel) {
             composable("device") { DeviceScreen(device, model::refreshDevice) }
             composable("media") { MediaScreen(model) }
             composable("style") { StyleScreen() }
-            composable("personal_care") { PersonalCareScreen() }
+            composable("personal_care") { PersonalCareScreen(model) }
             composable("settings") { SettingsScreen(model) }
         }
     }

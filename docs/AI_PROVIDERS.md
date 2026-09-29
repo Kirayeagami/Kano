@@ -1,41 +1,12 @@
-# KANO — AI Provider Architecture & Contracts
+# AI providers — actual state
 
----
+AppGraph constructs AiRouter with an empty provider list. Local AI, OpenAI, Gemini,
+Perplexity, Google login and Drive are NOT connected. No network permission exists.
 
-## 1. Provider Abstraction (`:core`)
+The core router validates requested capability and applies text egress policy before a
+remote provider call. It does not automatically select a provider, fall back, synthesize
+conflicts or implement OAuth. Those are future work, not current functionality.
 
-All AI capabilities are abstracted behind pure Kotlin interfaces in `:core`:
-
-```
-               ┌───────────────────────┐
-               │    Kano AI Router     │
-               └───────────┬───────────┘
-                           │
-             ┌─────────────┴─────────────┐
-             ▼                           ▼
-  ┌─────────────────────┐     ┌─────────────────────┐
-  │ Local AI Provider   │     │ Remote AI Provider  │
-  │ (On-device models)  │     │ (OpenAI / Gemini)   │
-  └─────────────────────┘     └──────────┬──────────┘
-                                         │
-                              ┌──────────▼──────────┐
-                              │  Privacy Firewall   │
-                              └─────────────────────┘
-```
-
----
-
-## 2. Router Responsibilities
-
-1. **Capability Selection**: Route requests based on needed capability (`REASON`, `OCR`, `SUMMARIZE`, `CLASSIFY`, `RESEARCH`, `EXTRACT`).
-2. **Egress Boundary Check**: Pass outbound payloads through `PrivacyFirewall`.
-3. **Availability State**: Report provider readiness (`Available`, `MissingCredentials`, `NetworkUnavailable`, `DisabledByUser`).
-4. **Conflict Synthesis**: When multiple connected providers return responses, compare outputs, flag disagreements, and present a unified summary without fabricating consensus.
-
----
-
-## 3. Account & Access Rules
-
-- Official provider APIs only.
-- No session scraping, cookie theft, or unauthorized browser token reuse.
-- Shared logins do not imply permission; each integration requires explicit user authorization.
+Future adapters need official API/auth configuration, explicit scopes, securely stored
+credentials, disconnect/revocation, response validation, request timeouts and consent.
+Consumer ChatGPT/Google subscriptions are not API credentials. No session scraping.

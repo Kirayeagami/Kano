@@ -1,3 +1,69 @@
+# Recovery checkpoint — 2026-09-29 (current)
+
+## Latest Verification Pass (2026-09-29)
+
+- **Repository Audit & Build Verification**:
+  - Audited repository files, source code, Room database schema 2 (`CareRecord` & `CareDao`), and new briefs (`HANDS-ON.md`, `KANO-2-DIRECTION.md`, `RECOVERY.md`).
+  - Executed connected test suite (`scripts/check.ps1 -Connected`): **42/42 tests passed** (25 core unit + 1 host unit + 16 connected instrumented tests) with **0 Android Lint errors**.
+  - Verified connected instrumented tests on `emulator-5554`: Room Schema 1->2 migration (`CareRepositoryTest`), Personal Care UI (`CareUiTest`), Theme switching & persistence (`AppearanceTest` & `AppearanceUiTest`), Media state UX (`MediaStateUiTest`), Room DAO idempotency (`DatabaseTest`), Compose navigation (`NavigationTest`), and Keystore encryption/tamper handling (`CredentialStoreTest`).
+  - Verified merged manifest privacy boundary (zero `INTERNET` permission, `allowBackup="false"`).
+
+This entry supersedes historical completion claims below. Repository and test evidence,
+not prior agent summaries, determine current status. No hidden reasoning/system prompts
+are included. Product briefs are preserved verbatim at the end of this file.
+
+## Direct user request
+> OPERATING MODE: FULL HANDS-ON CODE AGENT — inspect and modify the real E:\Works\Kano project, use the available laptop filesystem/terminal/Android Studio/emulator/ADB/GitHub capabilities directly, and verify every important result instead of giving me instructions for work you can perform yourself.
+
+## Recovery findings and changes
+- Clean main recovered at 7774400; fetch verified origin/main matched. Preserved newer
+  working Compose, device/media, Keystore and theme work. One active modifying agent.
+- Found fabricated Home alerts, Device queue claim, Media category counts, simulated
+  Style scanning/scores/wardrobe, and Care sample products. Removed from production UI.
+- Implemented real manual Care inventory: Room schema 2, safe 1→2 migration, explicit
+  name/category/status, validation, 200-entry limit, edit, confirmed delete, empty/loading/
+  error states and retained form drafts. No seed data or estimated quantities.
+- Style reports unavailable; no pretend camera/upload/AI actions. Home contains working
+  entry points and accurate capabilities. Media ERROR/INDEXING/UNKNOWN are distinct;
+  forgetting remains available after a search returns no rows.
+- Fixed dark glass colors and replaced mutable global theme tokens with scoped getters.
+  Added persisted Glass and Reduce motion switches. Ambient waves stop when paused or
+  reduced; Android animation-disable setting is respected when composing/resuming.
+- Six destinations adapt to font scale; media actions/theme controls stack and facts wrap.
+- Debug signing explicitly uses the same local standard debug keystore for IDE and CLI.
+  No keystore, passwords, OAuth tokens or provider keys were added to Git.
+- Updated audit, roadmap, UI system, security model and limitations; prior 'no issues',
+  hardware-backed guarantee and provider-conflict synthesis claims were inaccurate.
+
+## Real failures recorded
+- Baseline check.ps1 -Connected built but failed emulator install with
+  INSTALL_FAILED_UPDATE_INCOMPATIBLE. The Android test runner subsequently removed the
+  old package during cleanup (pm path returned no package). No manual uninstall/clear-data
+  command was issued. Old emulator app data preservation could not be confirmed.
+- First recovery run: 13/14 instrumented tests passed; migration test could not find schema
+  2 in test APK assets because assets were merged before KSP export. Added a build task
+  dependency so schema export precedes test assets. Subsequent evidence is below.
+
+## Scope and references
+The seven attached mobile images guide spacing, coral accents, rounded cards and dark
+surfaces; their sample products, people, balances and counts are not app data. No generated
+images or fabricated AI output were used. No Google Cloud resources or live provider
+connections were created. One emulator was available; no physical OnePlus was connected.
+
+Working prompt: recover source → remove unsupported claims → complete real local inventory
+→ test migration/persistence/UI → inspect actual screens → document/package a checkpoint.
+This is a development repair milestone, not completion of the entire new product brief.
+
+## Handoff prompt (prepared, not sent to another AI)
+Continue from the recovery commit in E:\Works\Kano. Read docs/KANO_STATE.md, TEST_STATUS.md,
+KNOWN_LIMITATIONS.md and this current worklog entry. Preserve schema 1 and migration 1→2.
+Do not reintroduce seeded inventory, fixed alerts, pretend scans, or unavailable providers.
+Complete media revocation/cancellation/process-death tests, then add bounded local OCR/QR
+with provenance and a reviewed persistence path. Run actual checks and capture real UI.
+Record failures as well as successes; no full release readiness claim without evidence.
+
+---
+## Historical worklog (superseded where contradicted above)
 # KANO — consolidated worklog and Android Studio handoff
 
 Updated 2026-09-29. This is the single handoff record for this project. It contains the
@@ -2936,3 +3002,2579 @@ be verified. This checkpoint is not production-ready; the full definition of don
 - Schema 1 needs no migration yet; every future schema change requires upgrade tests.
 - Dependency/security audit, current store target-policy review, release signing and distribution
   are release prerequisites. The update screen is a bundled roadmap, not a live update feed.
+
+
+---
+## New supplied brief: RECOVERY.md
+
+KANO — MASTER AUTONOMOUS RECOVERY → AUDIT → BUILD → UI → TEST → APK LOOP
+
+You are the lead Android engineer, product architect, UI/UX engineer, QA engineer, security engineer, and release engineer for my project:
+
+APP: Kano
+TYPE: Native Android personal operating assistant
+LOCAL REPO: E:\Works\Kano
+APP MODULE: E:\Works\Kano\app
+GITHUB: https://github.com/Kirayeagami/Kano.git
+
+IMPORTANT:
+This is an existing serious project. Do NOT restart it, replace it with a demo, or create a fake/vibe-coded prototype.
+Your job is to understand what already exists, preserve useful work, repair weak parts, then continuously improve it into a real production-quality app.
+
+==================================================
+PHASE 0 — RECOVER EVERYTHING BEFORE CODING
+==================================================
+
+First inspect the entire project state.
+
+Run/inspect:
+- git status
+- current branch
+- git remote -v
+- recent commits
+- all branches/tags if relevant
+- git diff
+- repository structure
+- AGENTS.md
+- KANO_WORKLOG.md
+- docs/*
+- Gradle files
+- AndroidManifest
+- source code
+- resources
+- database/models
+- navigation
+- themes/design system
+- tests
+- scripts
+- previews
+- screenshots
+- build configuration
+- generated/release artifacts if present
+
+Read the repository documentation BEFORE changing code.
+
+Determine:
+1. What was already completed.
+2. What changed since the previous work.
+3. What the latest GitHub commit contains.
+4. What remains unfinished.
+5. What is partially implemented.
+6. What is placeholder/fake.
+7. What is broken.
+8. What can be safely reused.
+9. What should be refactored.
+10. What should be deleted/renamed and why.
+11. Whether Android Studio currently builds/runs successfully.
+12. Existing emulator/device state.
+13. Existing screenshots and preview state.
+14. Existing known limitations.
+
+Do NOT rely on previous AI chat memory.
+The repository + actual source + Git history + Android Studio/build output are the source of truth.
+
+If old agents left incomplete work, recover it instead of blindly replacing it.
+
+==================================================
+PHASE 1 — FULL PROJECT AUDIT
+==================================================
+
+Create/update:
+- docs/KANO_STATE.md
+- docs/HANDOFF.md
+- docs/ROADMAP.md
+- docs/ARCHITECTURE.md
+- docs/UI_SYSTEM.md
+- docs/TEST_STATUS.md
+- docs/KNOWN_LIMITATIONS.md
+- docs/DELETIONS.md
+- KANO_WORKLOG.md
+
+Record the ACTUAL state, not an optimistic state.
+
+Classify features:
+
+DONE
+PARTIAL
+BROKEN
+MISSING
+PLACEHOLDER
+BLOCKED
+
+Create a dependency-aware implementation order.
+
+IMPORTANT:
+Do not spend the entire session redesigning screens while important architecture/functionality remains missing.
+
+==================================================
+PHASE 2 — PRODUCT PRINCIPLE
+==================================================
+
+Kano should behave like a serious personal operating assistant:
+
+OBSERVE
+→ UNDERSTAND
+→ PROTECT
+→ RECOMMEND
+→ ASK
+→ ACT
+→ LEARN FROM EXPLICIT USER FEEDBACK
+
+Local-first.
+Privacy-first.
+Permission-driven.
+Minimal-data architecture.
+No silent cloud upload.
+No fake intelligence.
+No fake metrics.
+No fake integrations.
+No fake buttons that do nothing.
+
+Never claim a capability exists unless it actually works.
+
+==================================================
+PHASE 3 — CORE APP DIRECTION
+==================================================
+
+Build the real application architecture for these major areas:
+
+HOME / PERSONAL COMMAND CENTER
+DEVICE
+MEDIA
+AI SEARCH / KNOWLEDGE
+STYLE STUDIO
+PERSONAL CARE
+DAILY LIFE / ATTENTION GUARD
+MONEY
+SHOPPING
+SETTINGS / PRIVACY
+AI PROVIDER ROUTER
+KNOWLEDGE VAULT
+PREFERENCES / MEMORY
+SECURITY / PERMISSIONS
+
+Architecture must remain modular so future features can be added without rewriting the app.
+
+Use:
+- clean architecture where appropriate
+- clear state management
+- repository/data boundaries
+- versioned schemas/migrations
+- feature modules/interfaces where useful
+- testable business logic
+- resilient error handling
+- cancellation/process-death safety
+- explicit permission states
+- real empty/loading/error states
+
+Do not over-engineer with unnecessary abstractions.
+
+==================================================
+PHASE 4 — VISUAL DESIGN: USE THE ATTACHED REFERENCE IMAGES
+==================================================
+
+The attached screenshots in THIS CHAT are the visual reference.
+
+Study them carefully.
+
+DO NOT use Kolpo House or any previous website as the design reference.
+
+The Kano UI should take the DESIGN LANGUAGE from the screenshots, not copy their branding/content.
+
+Desired visual language:
+- premium modern mobile UI
+- clean bright surfaces
+- strong typography hierarchy
+- large confident headings
+- generous whitespace
+- rounded visual blocks
+- image-first layouts where useful
+- subtle depth
+- soft shadows
+- coral/orange/red-orange accents
+- tasteful pastel gradients
+- soft warm/cool supporting tones
+- floating circular actions
+- compact navigation
+- strong visual hierarchy
+- editorial/product-quality composition
+- high information clarity
+- polished spacing
+- adaptive sizing
+
+The reference images show multiple product patterns:
+- dashboard/task cards
+- onboarding/choice screens
+- AI assistant interaction
+- shopping/product browsing
+- finance analytics
+- service/search workflows
+- image-heavy product cards
+
+Use those principles to make Kano feel like ONE coherent product.
+
+Do NOT copy literal screens, branding, names, or content.
+
+==================================================
+PHASE 5 — GLASS + MOTION SYSTEM
+==================================================
+
+Implement a restrained production-grade motion/design system.
+
+GLASSMORPHISM:
+- translucent surfaces where useful
+- subtle blur
+- light borders/highlights
+- controlled shadows
+- layered depth
+- opaque surfaces for primary information when readability requires
+- never make everything glass
+- performance-aware
+
+MOTION:
+- tap feedback
+- card press/scale
+- enter animations
+- section transitions
+- animated expansion/collapse
+- shared visual continuity
+- subtle staggered lists
+- state transitions
+- image transitions
+- loading transitions
+- micro-interactions
+- macro screen transitions
+
+WAVES:
+- slow organic flowing background shapes
+- subtle translucent gradients
+- theme-aware
+- behind content
+- low-energy movement
+- reusable component
+- stop when screen is not visible
+
+FLOATING ELEMENTS:
+- use selectively for important actions
+- voice
+- search
+- camera
+- add
+- refresh
+- assistant actions
+- never turn every component into a floating object
+
+GRADIENT MOTION:
+- very slow
+- organic
+- subtle
+- only where it improves hierarchy
+
+IMAGE MOTION:
+- reveal
+- soft scale
+- crop transition
+- subtle parallax for hero/media only
+
+SCANNING:
+For Style/Media/Product scanning:
+- elegant scan line
+- subtle overlay
+- real progress only
+- NO fake futuristic HUD
+
+Avoid:
+- cyberpunk
+- neon purple/cyan
+- glowing outlines everywhere
+- excessive blur
+- 3D spinning UI
+- random animations
+- meaningless motion
+- generic AI dashboard appearance
+
+==================================================
+PHASE 6 — LIGHT + DARK MODE
+==================================================
+
+Support:
+
+SYSTEM
+LIGHT
+DARK
+
+Persist the setting.
+
+System follows Android system preference.
+
+Dark mode must be designed independently, NOT simple color inversion.
+
+LIGHT:
+- clean bright canvas
+- warm/soft surfaces
+- coral/orange/pastel accents
+- dark readable typography
+- subtle glass
+
+DARK:
+- deep warm charcoal / soft black
+- warm-white typography
+- clearly separated surfaces
+- dark translucent glass
+- controlled coral/orange accents
+- subtle gradients
+- restrained borders
+- reduced visual glare
+
+Do not make dark mode neon, futuristic, or cyberpunk.
+
+Animate theme transitions smoothly but respect reduced-motion settings.
+
+==================================================
+PHASE 7 — RESPONSIVENESS + ACCESSIBILITY
+==================================================
+
+Design for:
+- small Android phones
+- normal phones
+- large phones
+- foldable-like widths
+- tablets where practical
+
+Never rely on hard-coded major widths/heights.
+
+Must handle:
+- long text
+- empty states
+- huge datasets
+- landscape where relevant
+- 200% font scaling
+- TalkBack/accessibility
+- minimum 48dp interactive targets
+- system bars/insets
+- keyboard
+- scrolling
+- dynamic content
+
+No clipped content.
+No hidden buttons.
+No overlapping navigation.
+No text wrapping that creates broken controls.
+
+==================================================
+PHASE 8 — REAL FUNCTIONAL FEATURES
+==================================================
+
+Implement and improve the actual important features one by one.
+
+DEVICE:
+- real model/OS
+- storage
+- RAM snapshot where available
+- battery
+- charging state
+- CPU/device information where available
+- app inventory only with legitimate access
+- no fake “RAM boost”
+- no fake optimizer claims
+
+MEDIA:
+- accessible photos/videos/screenshots/documents/downloads/audio/APKs/etc.
+- classify intelligently
+- duplicates
+- large files
+- temporary files
+- sensitive files
+- useful/low-value/review states
+- never auto-delete personal files
+
+MEDIA INTELLIGENCE:
+- OCR
+- URL extraction
+- QR interpretation
+- entity extraction
+- screenshot recognition
+- document/image understanding
+- staged video processing
+- provenance
+
+Before recommending deletion, preserve useful extracted knowledge.
+
+Examples:
+website screenshot → URL → verify → website record
+movie screenshot → title/year/watchlist data
+song screenshot → song/artist/album
+book screenshot → title/author
+receipt → useful transaction information
+QR → identify type/data safely; NEVER fabricate identity or auto-pay
+
+STYLE STUDIO:
+PHOTO → SCAN → ANALYZE → REVIEW → RECOMMEND → PREVIEW → SAVE → SHOP
+
+Analyze:
+- clothing
+- colors
+- layering
+- fit indicators
+- footwear
+- accessories
+- occasion
+- composition
+
+Never judge attractiveness.
+
+WARDROBE:
+- tops
+- bottoms
+- outerwear
+- shoes
+- accessories
+- bags
+- watches
+
+Use owned wardrobe first.
+
+Add:
+- wardrobe gap analysis
+- today's outfit
+- outfit saving
+- AI preview clearly labeled as AI-generated preview
+- camera coaching for framing/lighting/distance/background/posture
+
+PERSONAL CARE:
+- skincare
+- hair
+- grooming
+- oral care
+- everyday essentials
+
+Product scanner:
+SCAN / PHOTO / UPLOAD / MANUAL
+
+Track:
+ACTIVE
+LOW
+NEARLY EMPTY
+EMPTY
+EXPIRED
+NOT USING
+DISLIKED
+REVIEW
+UNKNOWN
+
+“What do I have?”
+“What do I need?”
+
+Avoid unnecessary shopping.
+Recommend existing equivalents before new purchases.
+
+DAILY LIFE:
+- tasks
+- deadlines
+- reminders
+- schedule
+- study
+- work
+- projects
+- preparation
+- important notifications
+
+ATTENTION GUARD must be factual and helpful.
+Never shame or moralize.
+
+MONEY:
+- income
+- food
+- transport
+- education
+- shopping
+- subscriptions
+- bills
+- recurring spending
+- unusual spending
+- trends
+
+Never automatically purchase/pay/send money.
+
+SHOPPING:
+Use real current sources/integrations only.
+Compare:
+- current price
+- seller
+- specifications
+- warranty
+- returns
+- reviews
+- price history where available
+
+Distinguish:
+- cheapest
+- best value
+- best match
+
+Never invent products, prices, sellers, ratings, or availability.
+
+AI:
+Provider abstraction for:
+- Local AI
+- OpenAI
+- Gemini
+- Perplexity
+- future providers
+
+Router chooses based on:
+- capability
+- availability
+- privacy
+- cost if supported
+
+When providers disagree:
+CONFIRMED
+LIKELY
+UNCERTAIN
+CONFLICTING
+
+KNOWLEDGE VAULT:
+Website
+Product
+App
+Movie
+Series
+Song
+Book
+Study Topic
+Project
+Note
+Recommendation
+Task
+Preference
+Outfit
+Wardrobe Item
+Lifestyle Product
+Routine
+
+Allow appropriate:
+View
+Edit
+Forget
+Delete
+Export
+
+PREFERENCES:
+Explicit feedback only:
+LIKE
+DISLIKE
+USEFUL
+NOT USEFUL
+MORE LIKE THIS
+LESS LIKE THIS
+DO NOT RECOMMEND AGAIN
+
+User can inspect/edit/reset/forget preference memory.
+
+==================================================
+PHASE 9 — PRIVACY + SECURITY
+==================================================
+
+Never:
+- scrape ChatGPT sessions
+- scrape Gemini consumer sessions
+- steal browser cookies
+- read private auth tokens
+- access private app databases illegally
+- assume consumer subscriptions equal API access
+- upload sensitive data silently
+
+Use official APIs/authentication.
+
+Before cloud AI:
+1. identify sensitivity
+2. minimize/redact if possible
+3. obtain appropriate consent
+4. send only necessary data
+5. record provenance where useful
+
+Sensitive data is local by default.
+
+Permissions must be:
+- explicit
+- understandable
+- revocable
+- reflected accurately in UI
+
+Do not pretend an Android permission grants capabilities that Android does not provide.
+
+==================================================
+PHASE 10 — IMPLEMENT ONE VERTICAL SLICE AT A TIME
+==================================================
+
+Work in this loop:
+
+AUDIT
+→ PLAN
+→ IMPLEMENT
+→ REFACTOR
+→ BUILD
+→ TEST
+→ RUN
+→ INSPECT ACTUAL UI
+→ FIX
+→ REBUILD
+→ DOCUMENT
+→ COMMIT
+→ NEXT FEATURE
+
+Do NOT modify 20 unrelated areas at once.
+
+For each feature:
+- understand dependencies first
+- implement smallest complete real version
+- test edge cases
+- validate actual UI
+- document
+- commit
+
+Delete or rename code only after checking references/dependencies.
+Whenever something is deleted/renamed, document:
+WHAT
+WHY
+REPLACEMENT
+DEPENDENCIES CHECKED
+
+==================================================
+PHASE 11 — ANDROID STUDIO + REAL DEVICE VALIDATION
+==================================================
+
+Use the actual project environment.
+
+First:
+- build in Android Studio/Gradle
+- run on emulator
+- inspect screenshots/UI
+- check logs/errors
+- interact with screens
+
+Then test on the physical OnePlus device through ADB/Wireless ADB when available.
+
+Do not claim “looks good” without seeing the actual rendered UI.
+
+Validate:
+- navigation
+- scrolling
+- text
+- cards
+- animations
+- keyboard
+- permissions
+- dark/light theme
+- configuration changes
+- errors
+- empty states
+- large datasets
+- process recreation where relevant
+
+==================================================
+PHASE 12 — NEVER FAKE A FEATURE
+==================================================
+
+A button must either:
+- work
+- clearly show unavailable/not configured
+- or not exist yet
+
+Never create fake:
+- AI responses
+- device metrics
+- shopping data
+- transaction data
+- OCR results
+- product identification
+- cloud provider responses
+- synchronization
+- notifications
+- animations pretending to indicate real processing
+- “success” messages without actual success
+
+Use realistic test data ONLY in clearly identified preview/test environments.
+
+==================================================
+PHASE 13 — UI QUALITY BAR
+==================================================
+
+Every screen must answer:
+
+What is important?
+What can I do?
+What happened?
+What happens next?
+
+Remove:
+- unnecessary separators
+- visual noise
+- excessive tiny text
+- excessive pills
+- unnecessary badges
+- redundant buttons
+- cramped content
+- meaningless decorative UI
+
+Keep:
+- clear hierarchy
+- visual rhythm
+- whitespace
+- useful imagery
+- strong typography
+- obvious actions
+- coherent navigation
+
+Make the UI feel intentionally designed by a senior product team, not generated by an AI.
+
+==================================================
+PHASE 14 — TEST STRATEGY
+==================================================
+
+Test:
+- normal data
+- empty data
+- huge data
+- malformed data
+- corrupted media
+- denied permissions
+- revoked permissions
+- network failure
+- AI failure
+- provider disagreement
+- OCR failure
+- QR failure
+- invalid URL
+- interrupted worker
+- cancellation
+- app restart
+- process death
+- database migration
+- invalid inputs
+- accessibility
+- dark mode
+- light mode
+- different screen sizes
+
+==================================================
+PHASE 15 — BUILD THE APK
+==================================================
+
+When the project reaches a stable checkpoint:
+
+1. run full validation
+2. build APK
+3. verify APK exists
+4. install it on emulator/device
+5. launch it
+6. smoke test major flows
+7. record build result
+
+Place/copy the final installable APK somewhere obvious, preferably:
+
+E:\Works\Kano\dist\Kano-debug.apk
+
+Also report the exact generated APK path if Gradle uses another output location.
+
+The APK must be real and installable.
+Do not give me a fictional path.
+
+==================================================
+PHASE 16 — GIT DISCIPLINE
+==================================================
+
+Before work:
+git status
+git log
+git diff
+branch
+
+After each meaningful milestone:
+- update docs
+- update worklog
+- commit
+- push when appropriate
+
+Never:
+- force push
+- reset --hard to discard work
+- git clean destructive operations
+- overwrite useful work blindly
+
+Keep commits coherent.
+
+Repository state is the handoff mechanism between AI agents.
+
+==================================================
+PHASE 17 — MULTI-AI HANDOFF
+==================================================
+
+Assume another AI may open this repo tomorrow with zero chat context.
+
+Therefore continuously maintain:
+- current state
+- completed work
+- current task
+- next task
+- known bugs
+- blocked items
+- architecture decisions
+- deleted/renamed files
+- test status
+- APK/build status
+
+Never depend on hidden conversation memory.
+
+==================================================
+PHASE 18 — AUTONOMOUS LOOP RULE
+==================================================
+
+Continue the loop automatically:
+
+1. inspect
+2. identify highest-impact incomplete work
+3. implement
+4. test
+5. inspect UI
+6. fix
+7. optimize
+8. document
+9. commit
+10. choose next highest-impact task
+11. repeat
+
+Prioritize in this order:
+
+A. BUILD/ARCHITECTURE/BLOCKERS
+B. CORE FUNCTIONALITY
+C. PRIVACY/SECURITY
+D. NAVIGATION/STATE
+E. IMPORTANT DATA FLOWS
+F. UI/UX
+G. MOTION/GLASS/ANIMATION
+H. EDGE CASES
+I. PERFORMANCE
+J. POLISH
+
+Do not polish a broken foundation.
+
+==================================================
+FINAL RESPONSE REQUIREMENT
+==================================================
+
+At every major checkpoint, give only a compact report:
+
+DONE:
+...
+
+CHANGED:
+...
+
+TESTED:
+...
+
+REMAINING:
+...
+
+NEXT:
+...
+
+APK:
+<real path or “not built yet”>
+
+Do not waste tokens explaining obvious code.
+
+START NOW.
+
+FIRST ACTION:
+Do a complete repository/Git/Android Studio audit and reconstruct the REAL current state of Kano before changing the UI.
+
+Then begin the implementation loop.
+
+---
+## New supplied brief: KANO-2-DIRECTION.md
+
+KANO 2.0 — MASTER AUTONOMOUS RECOVERY → CORE BUILD → INTEGRATION → UI → MOTION → TEST → APK LOOP
+
+PROJECT
+App: Kano
+Platform: Native Android
+Repo: E:\Works\Kano
+Module: E:\Works\Kano\app
+GitHub: https://github.com/Kirayeagami/Kano.git
+
+ROLE
+
+Act as the lead:
+- Android engineer
+- software architect
+- product engineer
+- UI/UX designer
+- motion designer
+- privacy/security engineer
+- QA engineer
+- performance engineer
+- release engineer
+
+Operate as a senior production engineering team, not as a demo generator.
+
+Kano is an existing project.
+DO NOT restart the project.
+DO NOT replace working architecture unnecessarily.
+DO NOT create fake functionality.
+DO NOT create a visually impressive shell around unfinished logic.
+DO NOT use generic AI/vibe-coded patterns.
+
+Your job is to inspect what already exists, understand all previous work, preserve good work, fix weak work, implement missing core functionality, then redesign and polish the entire product.
+
+==================================================
+0. SOURCE OF TRUTH / RECOVER PREVIOUS WORK
+==================================================
+
+Before writing code, reconstruct the REAL current state.
+
+Inspect:
+
+- git status
+- current branch
+- git remote
+- recent commits
+- branches
+- git diff
+- repository tree
+- AGENTS.md
+- KANO_WORKLOG.md
+- docs/*
+- Gradle configuration
+- AndroidManifest
+- Kotlin/Java source
+- Compose/UI code
+- themes
+- navigation
+- database
+- models
+- repositories
+- workers
+- services
+- permissions
+- integrations
+- tests
+- previews
+- scripts
+- screenshots
+- APK/build outputs
+- Android Studio project state
+- emulator/device state if available
+
+Read repository documentation before editing.
+
+Determine:
+
+DONE
+PARTIAL
+BROKEN
+MISSING
+PLACEHOLDER
+BLOCKED
+
+Find what changed recently in GitHub.
+
+Understand:
+- what previous agents implemented
+- what files were modified
+- what UI work is already finished
+- what functionality is real
+- what is only planned
+- what is placeholder
+- what is broken
+- what dependencies exist
+- what can safely be reused
+- what should be refactored
+- what should be deleted
+- what should be renamed
+
+NEVER infer project status from old AI conversation memory when the repository can prove it.
+
+==================================================
+1. DOCUMENT THE RECOVERED STATE
+==================================================
+
+Create/update:
+
+AGENTS.md
+KANO_WORKLOG.md
+
+docs/KANO_STATE.md
+docs/HANDOFF.md
+docs/ROADMAP.md
+docs/ARCHITECTURE.md
+docs/UI_SYSTEM.md
+docs/PRIVACY_MATRIX.md
+docs/SECURITY_MODEL.md
+docs/AI_PROVIDERS.md
+docs/DECISIONS.md
+docs/TEST_STATUS.md
+docs/KNOWN_LIMITATIONS.md
+docs/DELETIONS.md
+
+Keep these documents continuously updated.
+
+Another AI must be able to open the repository with ZERO chat history and continue correctly.
+
+==================================================
+2. IMPLEMENTATION PRIORITY — IMPORTANT
+==================================================
+
+DO NOT start with visual polishing.
+
+Work in this order:
+
+PHASE A
+BUILD + ARCHITECTURE + BLOCKERS
+
+PHASE B
+CORE DATA + STATE + NAVIGATION + PERMISSIONS
+
+PHASE C
+IMPORTANT REAL FEATURES
+
+PHASE D
+AI / GOOGLE / DEVICE / MEDIA INTEGRATIONS
+
+PHASE E
+SECURITY + PRIVACY
+
+PHASE F
+PERFORMANCE + RELIABILITY
+
+PHASE G
+MAJOR UI REDESIGN
+
+PHASE H
+GLASSMORPHISM + MOTION + ANIMATION
+
+PHASE I
+RESPONSIVE + ACCESSIBILITY
+
+PHASE J
+FULL DEVICE VALIDATION
+
+PHASE K
+APK RELEASE
+
+Do not spend hours polishing a screen while the underlying feature does not work.
+
+==================================================
+3. KANO PRODUCT PRINCIPLE
+==================================================
+
+Kano should work as a real personal operating assistant:
+
+OBSERVE
+→ UNDERSTAND
+→ PROTECT
+→ RECOMMEND
+→ ASK
+→ ACT
+→ LEARN FROM EXPLICIT USER FEEDBACK
+
+Core principles:
+
+LOCAL-FIRST
+PRIVACY-FIRST
+PERMISSION-FIRST
+MINIMUM-DATA
+FAST
+SECURE
+RELIABLE
+MODULAR
+EXTENSIBLE
+TRANSPARENT
+
+Never fabricate capability.
+
+==================================================
+4. DEVICE ACCESS / PERMISSION MODEL
+==================================================
+
+Kano should provide the user with as much useful device information and functionality as Android legitimately allows.
+
+However:
+
+DO NOT bypass Android security.
+DO NOT root the phone.
+DO NOT exploit private APIs.
+DO NOT read private databases of other apps.
+DO NOT steal cookies/tokens.
+DO NOT silently access protected information.
+
+Use official Android APIs and permissions.
+
+When a capability needs permission:
+
+Explain:
+WHAT
+WHY
+WHAT DATA IS ACCESSED
+WHERE IT IS USED
+HOW TO REVOKE IT
+
+Ask for permission at the appropriate moment.
+
+Never request every permission on first launch just because it is available.
+
+Create a clear permissions/privacy center where the user can see:
+
+GRANTED
+NOT GRANTED
+OPTIONAL
+REQUIRED
+REVOKED
+
+After login/authorization, unlock only the functionality that is genuinely available.
+
+Without permissions:
+show device/basic app information that Android allows.
+
+==================================================
+5. GOOGLE ACCOUNT / GOOGLE DRIVE
+==================================================
+
+Implement official Google authentication/OAuth only.
+
+Desired experience:
+
+SIGN IN WITH GOOGLE
+→ authenticated Google account
+→ show authorized Google services
+→ connect supported services without unnecessary repeated login
+
+Use one authenticated account where Google APIs legitimately support the same authorization/session.
+
+Do NOT assume one login magically grants every Google capability.
+
+Request only the scopes actually required.
+
+Drive integration:
+- browse authorized files
+- search
+- inspect metadata
+- upload/download only when explicitly requested
+- respect Drive permissions
+- never expose private files without authorization
+
+Show account and connected-service status inside Kano.
+
+==================================================
+6. AI PROVIDER LOGIN / CONNECTION CENTER
+==================================================
+
+Create a proper:
+
+AI & SERVICES CONNECTION CENTER
+
+Possible providers:
+- OpenAI
+- Gemini
+- Perplexity
+- local AI
+- future providers
+
+Use official supported authentication/API methods only.
+
+IMPORTANT:
+
+A consumer ChatGPT subscription does NOT automatically mean API access.
+
+A Google login does NOT automatically grant every Gemini API capability.
+
+Only enable a provider when actual supported authentication/API access exists.
+
+Never simulate successful login.
+
+Never create fake provider responses.
+
+Show:
+
+CONNECTED
+NOT CONNECTED
+AUTHORIZATION REQUIRED
+API NOT AVAILABLE
+ERROR
+DISCONNECTED
+
+The user can disconnect a provider and revoke access.
+
+==================================================
+7. DATA PRIVACY
+==================================================
+
+DEFAULT:
+Private data stays local whenever practical.
+
+Never silently upload:
+
+- personal photos
+- videos
+- documents
+- messages
+- financial information
+- private files
+- contacts
+- notifications
+- passwords
+- authentication tokens
+- sensitive content
+
+Before cloud AI processing:
+
+1. determine sensitivity
+2. minimize data
+3. redact where possible
+4. ask for required consent
+5. send only what is needed
+6. clearly show where it goes
+7. store provenance when appropriate
+
+Never sell/share/distribute user data.
+
+Never send data to an unrelated third party.
+
+Never use private user data for hidden training/marketing.
+
+==================================================
+8. SECURITY
+==================================================
+
+Protect:
+- OAuth credentials
+- API credentials
+- tokens
+- local secrets
+- private indexes
+- sensitive metadata
+
+Use Android Keystore where appropriate.
+
+Never hardcode secrets.
+
+Never put API keys in source control.
+
+Never expose authentication tokens through logs.
+
+Use secure storage and least privilege.
+
+==================================================
+9. CORE KANO SECTIONS
+==================================================
+
+Build the actual product around:
+
+HOME
+DEVICE
+MEDIA
+AI SEARCH
+KNOWLEDGE VAULT
+STYLE STUDIO
+PERSONAL CARE
+DAILY LIFE
+ATTENTION GUARD
+MONEY
+SHOPPING
+SETTINGS
+PRIVACY
+AI PROVIDERS
+PREFERENCES
+
+Every section must have a meaningful purpose.
+
+Each section can have its own visual language while still clearly belonging to Kano.
+
+==================================================
+10. CORE FUNCTIONALITY
+==================================================
+
+DEVICE
+
+Real information only:
+- device model
+- Android version
+- storage
+- battery
+- charging
+- memory information where available
+- CPU/device information where Android permits
+- installed-app inventory only with legitimate APIs/access
+
+Do not create fake optimization numbers.
+
+Do not claim that killing apps magically creates permanent RAM.
+
+MEDIA
+
+Support practical local media workflows for accessible content:
+
+- photos
+- videos
+- screenshots
+- documents
+- downloads
+- audio
+- APK files
+- archives
+- duplicates
+- large files
+- temporary files
+- sensitive files
+
+Classification:
+
+KEEP
+USEFUL
+REVIEW
+LOW VALUE
+DUPLICATE
+TEMPORARY
+SENSITIVE
+UNKNOWN
+
+Never auto-delete personal files.
+
+MEDIA INTELLIGENCE
+
+Where technically and legally supported:
+
+- OCR
+- URL extraction
+- QR interpretation
+- entity extraction
+- image classification
+- screenshot understanding
+- staged video analysis
+- document extraction
+
+Preserve extracted knowledge before deletion recommendations.
+
+STYLE STUDIO
+
+PHOTO
+→ SCAN
+→ ANALYZE
+→ REVIEW
+→ RECOMMEND
+→ PREVIEW
+→ SAVE
+→ SHOP
+
+Analyze:
+- clothing
+- colors
+- layering
+- fit indicators
+- shoes
+- accessories
+- occasion
+- composition
+
+Do not judge attractiveness.
+
+WARDROBE:
+
+TOPS
+BOTTOMS
+OUTERWEAR
+SHOES
+ACCESSORIES
+BAGS
+WATCHES
+
+Use wardrobe inventory before recommending purchases.
+
+PERSONAL CARE
+
+Categories:
+- skincare
+- hair
+- grooming
+- oral
+- everyday essentials
+
+Product scanner:
+SCAN
+PHOTO
+UPLOAD
+MANUAL
+
+Track real inventory state:
+
+ACTIVE
+LOW
+NEARLY EMPTY
+EMPTY
+EXPIRED
+NOT USING
+DISLIKED
+REVIEW
+UNKNOWN
+
+“What do I have?”
+“What do I need?”
+
+Avoid unnecessary consumption.
+
+DAILY LIFE
+
+- tasks
+- schedule
+- reminders
+- deadlines
+- study
+- work
+- projects
+- preparation
+- important notifications
+
+ATTENTION GUARD must be factual and useful.
+Never shame the user.
+
+MONEY
+
+Where legitimate authorized data is available:
+
+- income
+- spending
+- food
+- transport
+- education
+- subscriptions
+- bills
+- recurring expenses
+- unusual spending
+- trends
+
+Never automatically transfer/pay/purchase.
+
+SHOPPING
+
+Use real current data only when supported.
+
+Show:
+- product
+- seller
+- price
+- specifications
+- availability
+- warranty
+- returns
+- reviews
+- price history where actually available
+
+Never invent shopping information.
+
+AI SEARCH
+
+Create a universal search layer over authorized sources.
+
+Possible sources:
+- local files
+- media
+- knowledge vault
+- notifications
+- email
+- browser integrations
+- connected providers
+- authorized external services
+
+Always provide provenance.
+
+==================================================
+11. KNOWLEDGE VAULT
+==================================================
+
+Support structured entities:
+
+Website
+Product
+App
+Movie
+Series
+Song
+Book
+Study Topic
+Project
+Note
+Recommendation
+Task
+Preference
+Outfit
+Wardrobe Item
+Lifestyle Product
+Routine
+
+Where appropriate provide:
+
+VIEW
+EDIT
+FORGET
+DELETE
+EXPORT
+
+==================================================
+12. EXPLICIT MEMORY / PREFERENCES
+==================================================
+
+Only learn preferences through legitimate explicit signals.
+
+Support:
+
+LIKE
+DISLIKE
+USEFUL
+NOT USEFUL
+MORE LIKE THIS
+LESS LIKE THIS
+DO NOT RECOMMEND AGAIN
+
+Provide a user-visible preference manager.
+
+User can:
+- inspect
+- edit
+- forget
+- reset
+
+==================================================
+13. UI DESIGN — AFTER CORE FUNCTIONALITY
+==================================================
+
+Use the reference screenshots attached to this conversation as the primary visual direction.
+
+Do NOT use Kolpo House as visual inspiration.
+
+Do not copy the screenshots literally.
+
+Extract their design principles:
+
+- premium mobile composition
+- clean canvas
+- confident typography
+- strong hierarchy
+- large rounded cards
+- beautiful imagery
+- soft gradients
+- coral/orange accents
+- pastel secondary colors
+- floating actions
+- compact navigation
+- whitespace
+- depth
+- subtle shadows
+- excellent spacing
+- polished product presentation
+
+Kano must feel like one carefully designed premium product.
+
+==================================================
+14. EACH SECTION GETS ITS OWN VISUAL LANGUAGE
+==================================================
+
+Do not make every page identical.
+
+HOME:
+warm premium command-center design
+
+DEVICE:
+technical but clean
+
+MEDIA:
+image/content-first
+
+STYLE:
+fashion/editorial
+
+PERSONAL CARE:
+soft lifestyle/product design
+
+MONEY:
+clean analytical design
+
+SHOPPING:
+premium commerce design
+
+AI:
+minimal intelligent interaction design
+
+KNOWLEDGE:
+editorial/library design
+
+SETTINGS:
+quiet utilitarian design
+
+Each section can use different accent colors, imagery and motion patterns while sharing:
+
+- typography system
+- spacing system
+- icon language
+- navigation principles
+- accessibility
+- interaction rules
+
+==================================================
+15. DARK MODE — NOTHING-INSPIRED DIRECTION
+==================================================
+
+Take inspiration from the visual philosophy of Nothing UI:
+
+- strong monochrome foundation
+- black/white contrast
+- extremely clean composition
+- restrained visual language
+- technical precision
+- minimal typography
+- geometric details
+- subtle information density
+- controlled accent color
+- understated motion
+
+But DO NOT COPY:
+- Nothing logos
+- exact layouts
+- proprietary glyph designs
+- branding
+- text
+- product UI
+- trademark-specific visuals
+
+Combine that restrained dark design philosophy with Kano's own identity.
+
+DARK MODE:
+
+deep black / warm charcoal
+warm-white text
+subtle tonal layers
+controlled coral/red-orange accent
+very limited secondary color
+subtle glass
+soft gradients
+minimal glow
+clean technical details
+
+Do NOT make it:
+- cyberpunk
+- neon
+- purple/cyan gamer UI
+- glowing HUD
+- sci-fi dashboard
+
+==================================================
+16. LIGHT MODE
+==================================================
+
+LIGHT MODE should feel:
+
+bright
+premium
+airy
+modern
+warm
+clean
+
+Use:
+- soft whites
+- light gray surfaces
+- pastel gradients
+- coral/orange accents
+- subtle shadows
+- restrained glass
+
+==================================================
+17. THEME MODES
+==================================================
+
+Provide:
+
+SYSTEM
+LIGHT
+DARK
+
+Persist user's selection.
+
+SYSTEM follows Android setting.
+
+Do not simply invert colors.
+
+Create separate design tokens for light/dark:
+- surfaces
+- text
+- borders
+- shadows
+- glass opacity
+- gradient colors
+- waves
+- icons
+- navigation
+- system bars
+
+==================================================
+18. OPTIONAL “GLASS MODE”
+==================================================
+
+Add a user-facing visual preference:
+
+GLASS MODE
+ON / OFF
+
+When ON:
+use tasteful translucent/glass surfaces, blur, soft borders and depth where performance permits.
+
+When OFF:
+use cleaner opaque premium surfaces.
+
+This is a visual preference, NOT a fake “performance” feature.
+
+Persist the preference.
+
+Respect accessibility and reduced motion.
+
+==================================================
+19. GLASSMORPHISM
+==================================================
+
+Use glass as an enhancement, not the entire application.
+
+Good glass:
+- translucent card
+- soft blur
+- subtle highlight
+- faint border
+- controlled shadow
+- background depth
+
+Avoid:
+- every component being glass
+- heavy blur
+- unreadable text
+- excessive transparency
+- performance-heavy effects
+
+Primary information must remain readable.
+
+==================================================
+20. RESPONSIVE UI
+==================================================
+
+FULL RESPONSIVE DESIGN IS REQUIRED.
+
+Support:
+- small phones
+- normal phones
+- large phones
+- foldable-like widths
+- tablets where practical
+- portrait
+- landscape where relevant
+
+No major UI element should disappear because of screen size.
+
+Never hide important options.
+
+Never use hardcoded screen widths for major layout decisions.
+
+Adapt:
+- card size
+- grid columns
+- spacing
+- typography
+- content density
+- navigation
+- imagery
+- controls
+
+Handle:
+- long text
+- empty content
+- large content
+- keyboard
+- insets
+- accessibility font sizes
+- 200% font scale
+- TalkBack
+
+Minimum touch target:
+48dp.
+
+==================================================
+21. PREMIUM ANIMATION SYSTEM
+==================================================
+
+Animation must improve:
+- hierarchy
+- feedback
+- continuity
+- perceived quality
+- comprehension
+
+Not simply exist everywhere.
+
+Use:
+
+MICRO:
+tap
+toggle
+press
+selection
+
+CARD:
+fade
+small vertical movement
+soft scale
+expansion
+collapse
+state changes
+
+MACRO:
+screen transitions
+shared-element-like continuity
+section changes
+navigation
+large image transitions
+
+AMBIENT:
+slow gradients
+soft floating elements
+waves
+background movement
+
+PROCESSING:
+QUEUED
+INDEXING
+PROCESSING
+COMPLETE
+FAILED
+
+Use real state for real processing.
+
+Never animate a fake process to imply work is happening.
+
+==================================================
+22. ANIMATION QUALITY
+==================================================
+
+Prefer:
+- spring-based motion where appropriate
+- natural easing
+- subtle scale
+- fade/slide combinations
+- shared continuity
+- staggered list entrances
+- animated gradients
+- soft image reveals
+- smooth navigation
+
+Avoid:
+- dramatic 3D spins
+- bouncing every element
+- excessive zoom
+- constant movement
+- distracting parallax
+- random animation
+- motion without meaning
+
+Use animation tiers:
+
+FAST
+interaction feedback
+
+MEDIUM
+screen/content/state changes
+
+SLOW
+ambient motion
+
+Stop expensive ambient animation when the screen is not visible.
+
+==================================================
+23. WAVES / FLOATING ELEMENTS
+==================================================
+
+Create a reusable organic wave system.
+
+Use:
+- low-frequency curves
+- soft gradients
+- translucent layers
+- very slow motion
+- theme-aware variants
+
+Place waves behind content.
+
+Floating elements can be used for important contextual actions:
+- search
+- voice
+- camera
+- add
+- assistant
+- refresh
+
+Do not make every element float.
+
+==================================================
+24. SCANNER ANIMATION
+==================================================
+
+For:
+- Style scanner
+- Product scanner
+- Media scanning
+
+Use:
+- elegant scan line
+- subtle illumination
+- clean progress state
+- realistic processing feedback
+
+No futuristic HUD.
+No fake AI scanning animation.
+
+==================================================
+25. PERFORMANCE
+==================================================
+
+Kano must feel fast.
+
+Optimize:
+- recomposition
+- image loading
+- lazy lists
+- database queries
+- background work
+- bitmap memory
+- animations
+- blur usage
+- networking
+- AI processing
+- video processing
+- battery usage
+
+Avoid:
+- unnecessary infinite animations
+- giant bitmaps
+- excessive background workers
+- needless network calls
+- blocking the UI thread
+- unnecessary recomposition
+- expensive shaders everywhere
+
+Measure real performance where possible.
+
+==================================================
+26. ACCESSIBILITY
+==================================================
+
+Support:
+- TalkBack
+- content descriptions
+- focus order
+- scalable text
+- high contrast
+- touch targets
+- reduced motion
+
+Reduced Motion should:
+- reduce/disable ambient movement
+- reduce parallax
+- simplify macro transitions
+- retain useful feedback
+
+==================================================
+27. FEATURE IMPLEMENTATION LOOP
+==================================================
+
+For EACH feature:
+
+AUDIT
+→ PLAN
+→ IMPLEMENT
+→ UNIT TEST
+→ BUILD
+→ RUN
+→ TEST REAL FLOW
+→ INSPECT UI
+→ FIX
+→ OPTIMIZE
+→ DOCUMENT
+→ COMMIT
+
+Then continue to the next feature.
+
+Never implement ten half-finished features simultaneously.
+
+==================================================
+28. CODE QUALITY
+==================================================
+
+Keep code:
+- readable
+- modular
+- maintainable
+- testable
+- documented only where useful
+- free of dead code
+- free of fake implementations
+- free of unnecessary abstractions
+
+Before deleting or renaming:
+check all references and dependencies.
+
+Record deletions/renames in:
+docs/DELETIONS.md
+
+==================================================
+29. FAILURE HANDLING
+==================================================
+
+Every real integration must have:
+
+LOADING
+EMPTY
+SUCCESS
+PARTIAL
+ERROR
+RETRY
+PERMISSION DENIED
+NOT CONNECTED
+UNAVAILABLE
+
+Never hide failures behind fake success UI.
+
+==================================================
+30. TEST EVERYTHING
+==================================================
+
+Test:
+
+normal data
+empty data
+huge datasets
+malformed files
+corrupted media
+permission denied
+permission revoked
+network failure
+AI failure
+provider disagreement
+OAuth failure
+expired authorization
+OCR failure
+QR failure
+invalid URL
+interrupted work
+cancellation
+process death
+app restart
+database migration
+theme changes
+screen-size changes
+large fonts
+accessibility
+
+==================================================
+31. ANDROID STUDIO VALIDATION
+==================================================
+
+Use Android Studio and the actual project.
+
+First:
+build
+
+Then:
+run emulator
+
+Then:
+inspect real rendered UI
+
+Then:
+interact with the application
+
+Then:
+check logs/errors
+
+Then:
+fix
+
+Then:
+rebuild
+
+Then:
+run again
+
+After emulator validation:
+test physical OnePlus device using ADB/Wireless ADB when available.
+
+Do not say “UI looks good” without actually inspecting the rendered result.
+
+==================================================
+32. GIT / MULTI-AI WORKFLOW
+==================================================
+
+Before modifying:
+
+git status
+git branch
+git log -n 10
+git diff
+
+Only one active agent should modify the working tree at a time.
+
+Use coherent commits.
+
+Push meaningful completed milestones.
+
+Never:
+- force push
+- git reset --hard to destroy work
+- destructive git clean
+- blindly overwrite existing implementation
+
+Repository state + documentation = agent-to-agent memory.
+
+==================================================
+33. APK REQUIREMENT
+==================================================
+
+At stable milestone:
+
+BUILD
+→ VERIFY
+→ INSTALL
+→ LAUNCH
+→ SMOKE TEST
+→ PACKAGE APK
+
+Create a real APK.
+
+Prefer:
+
+E:\Works\Kano\dist\Kano-debug.apk
+
+But only report a path if the file actually exists.
+
+Also report the actual Gradle generated APK path.
+
+Install the APK on the emulator/OnePlus when possible and verify it launches.
+
+==================================================
+34. ABSOLUTE NO-FAKE RULE
+==================================================
+
+NEVER invent:
+
+- AI responses
+- device data
+- RAM numbers
+- battery data
+- OCR results
+- QR contents
+- products
+- sellers
+- prices
+- reviews
+- transactions
+- provider connections
+- Google data
+- Drive files
+- ChatGPT access
+- Gemini access
+- permissions
+- successful operations
+
+A feature is either REAL,
+or clearly marked as unavailable/not configured,
+or not exposed yet.
+
+==================================================
+35. CONTINUOUS AUTONOMOUS LOOP
+==================================================
+
+After each completed task:
+
+inspect remaining work
+→ identify highest-impact unfinished item
+→ implement
+→ test
+→ fix
+→ optimize
+→ document
+→ commit
+→ continue
+
+Do not stop merely because one screen looks finished.
+
+Keep improving until the project reaches the current practical release milestone.
+
+==================================================
+36. FINAL REPORT FORMAT
+==================================================
+
+Keep reports compact:
+
+DONE
+<what was actually completed>
+
+CHANGED
+<important files/features>
+
+TESTED
+<actual build/device/test evidence>
+
+ISSUES
+<real remaining problems>
+
+NEXT
+<next highest-priority task>
+
+APK
+<real APK path or NOT BUILT>
+
+Do not waste tokens explaining obvious implementation details.
+
+==================================================
+START NOW
+==================================================
+
+STEP 1:
+Fully audit E:\Works\Kano and reconstruct the current state from the repository, GitHub history, documentation, source, build system and Android Studio.
+
+STEP 2:
+Determine what I have already completed since the previous AI stopped.
+
+STEP 3:
+Create the real current roadmap.
+
+STEP 4:
+Fix/build the important underlying functionality first.
+
+STEP 5:
+Implement integrations and permission architecture.
+
+STEP 6:
+Only after the core foundation is stable, redesign the UI using the attached reference screenshots.
+
+STEP 7:
+Add:
+- Light/Dark/System
+- Nothing-inspired dark visual language
+- optional Glass Mode
+- premium glassmorphism
+- responsive layouts
+- section-specific visual identities
+- waves
+- floating elements
+- micro animations
+- card animations
+- macro transitions
+- image transitions
+- scanner animations
+- reduced-motion support
+
+STEP 8:
+Validate on emulator.
+
+STEP 9:
+Validate on my OnePlus device.
+
+STEP 10:
+Build a REAL installable APK.
+
+DO NOT START BY REDESIGNING RANDOM SCREENS.
+FIRST UNDERSTAND THE CURRENT PROJECT.
+THEN FINISH THE IMPORTANT THINGS.
+THEN MAKE IT BEAUTIFUL.
+THEN MAKE IT FAST.
+THEN MAKE IT STABLE.
+THEN GIVE ME THE REAL APK.
+
+---
+## New supplied brief: HANDS-ON.md
+
+==================================================
+KANO — FULL LAPTOP + ANDROID STUDIO WORK MODE
+==================================================
+
+You are operating as the hands-on engineering agent for my Kano project.
+
+PROJECT LOCATION:
+E:\Works\Kano
+
+You may use ALL laptop/project capabilities that are actually exposed to you by the current Codex/Astra environment.
+
+Your job is NOT only to write suggestions in chat.
+
+You should directly:
+- inspect files
+- read files
+- create files
+- modify files
+- rename files
+- delete files when justified
+- create folders
+- run terminal commands
+- run PowerShell commands
+- run Gradle
+- run tests
+- inspect build output
+- inspect logs
+- inspect Android Studio project configuration
+- inspect Android Studio previews
+- use the Android emulator
+- use ADB where available
+- install APKs
+- launch the application
+- collect screenshots
+- inspect rendered UI
+- diagnose errors
+- fix errors
+- rebuild
+- retest
+- update documentation
+- commit changes to Git
+- push changes to GitHub when appropriate
+
+Do NOT merely tell me what commands I should run when you can actually execute them in the available environment.
+
+==================================================
+ANDROID STUDIO WORKFLOW
+==================================================
+
+Treat Android Studio as part of the actual development environment.
+
+Inspect:
+- Gradle sync state
+- project/module configuration
+- Compose configuration
+- SDK configuration
+- JDK
+- build variants
+- dependencies
+- lint
+- tests
+- previews
+- emulator configuration
+- Logcat/build errors where accessible
+
+Use Android Studio/emulator validation whenever available.
+
+Workflow:
+
+SOURCE
+→ BUILD
+→ INSTALL
+→ RUN
+→ INTERACT
+→ INSPECT
+→ SCREENSHOT
+→ DIAGNOSE
+→ FIX
+→ REBUILD
+→ RETEST
+
+Never assume the UI works only because compilation succeeds.
+
+==================================================
+LAPTOP ACCESS RULE
+==================================================
+
+Use the actual filesystem and project state as the source of truth.
+
+You may inspect the Kano project and related development files on my laptop when the environment provides that access.
+
+Especially inspect:
+
+E:\Works\Kano
+E:\Works\Kano\app
+E:\Works\Kano\docs
+E:\Works\Kano\scripts
+
+Also inspect related Android Studio/Gradle configuration when needed.
+
+Do not invent files or paths.
+
+Before changing anything important:
+
+git status
+git branch
+git log -n 10
+git diff
+
+Understand the existing implementation before modifying it.
+
+==================================================
+DEVICE / ADB WORKFLOW
+==================================================
+
+When an Android emulator or my physical OnePlus device is available:
+
+1. Detect available devices.
+2. Determine which device is running.
+3. Build the latest application.
+4. Install the latest APK.
+5. Launch Kano.
+6. Test real navigation.
+7. Test important interactions.
+8. Inspect Logcat/errors.
+9. Capture screenshots where useful.
+10. Fix problems.
+11. Reinstall/retest.
+
+Do not claim physical-device validation unless the physical device was actually reached and tested.
+
+==================================================
+MAXIMUM REAL ACCESS, NEVER SECURITY BYPASS
+==================================================
+
+Give yourself maximum practical access to the development environment that the current tool/session legitimately provides.
+
+However, never:
+- bypass Windows security
+- bypass Android sandboxing
+- steal credentials
+- extract passwords
+- bypass authentication
+- access another application's protected database illegally
+- disable security merely to make a feature appear functional
+- use malware/spyware behavior
+- modify unrelated personal files unnecessarily
+
+For Android features requiring permission, Kano must use legitimate Android permissions and ask the user.
+
+==================================================
+NO FAKE SUCCESS
+==================================================
+
+A successful command must be verified by its actual result.
+
+Examples:
+
+Do not say:
+"APK created"
+
+unless the APK actually exists.
+
+Do not say:
+"Installed successfully"
+
+unless installation actually succeeded.
+
+Do not say:
+"Google connected"
+
+unless authentication actually succeeded.
+
+Do not say:
+"AI is working"
+
+unless a real provider request/response was verified.
+
+Do not say:
+"UI is responsive"
+
+unless different screen/content conditions were tested.
+
+==================================================
+RESOURCE DISCOVERY
+==================================================
+
+When something is required and may already exist, search the project first.
+
+Examples:
+- existing components
+- utilities
+- themes
+- repositories
+- models
+- API clients
+- tests
+- assets
+- screenshots
+- documentation
+
+Reuse good existing work.
+
+Do not duplicate an existing implementation simply because you did not search for it.
+
+==================================================
+FILE CHANGE DISCIPLINE
+==================================================
+
+Before deleting or renaming anything:
+
+1. Search all references.
+2. Understand dependencies.
+3. Determine whether another feature depends on it.
+4. Replace/update references.
+5. Run build/tests.
+6. Document the change.
+
+Update:
+
+docs/DELETIONS.md
+
+with:
+
+FILE
+ACTION
+REASON
+REPLACEMENT
+DEPENDENCIES CHECKED
+
+==================================================
+AUTONOMOUS ENGINEERING BEHAVIOR
+==================================================
+
+Once you begin, continue the engineering loop without stopping after one trivial change.
+
+Prioritize:
+
+1. Recover existing state
+2. Fix blockers
+3. Build foundation
+4. Complete important functionality
+5. Implement permissions/integrations
+6. Security/privacy
+7. Performance
+8. UI redesign
+9. Responsive behavior
+10. Animation/glass effects
+11. Full testing
+12. APK release
+
+At every stage use:
+
+INSPECT
+→ DECIDE
+→ IMPLEMENT
+→ VERIFY
+→ DOCUMENT
+→ COMMIT
+→ CONTINUE
+
+==================================================
+IMPORTANT
+==================================================
+
+You are the active coding agent.
+
+Do not treat this as a theoretical programming question.
+
+Actually work on E:\Works\Kano whenever the current environment provides filesystem/terminal/Android Studio access.
+
+Use the real project.
+Use the real Git history.
+Use the real Android Studio state.
+Use the real emulator/device.
+Use real build results.
+Use real APK output.
+
+Never fabricate progress.

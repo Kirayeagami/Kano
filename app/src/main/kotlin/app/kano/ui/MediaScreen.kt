@@ -90,61 +90,23 @@ fun MediaScreen(model: KanoViewModel) {
 
                     Spacer(Modifier.height(12.dp))
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         KanoHeroButton(
                             onClick = { picker.launch(arrayOf("image/*", "video/*")) },
                             enabled = !busy && !active,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text("Choose photos/videos", fontWeight = FontWeight.Bold)
+                            Text("Choose photos or videos", fontWeight = FontWeight.Bold)
                         }
                         KanoOutlinedButton(
                             onClick = model::scan,
                             enabled = count > 0 && !busy && !active,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text("Refresh index")
-                        }
-                    }
-                }
-            }
-
-            // AI FOUND Categorization Badges Card
-            if (count > 0) {
-                item {
-                    KanoGlassCard(glassColor = KanoPeachContainer.copy(alpha = 0.88f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "AI Found / Categories",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(1f),
-                            )
-                            KanoOutlinedButton(
-                                onClick = { },
-                                modifier = Modifier.height(32.dp),
-                            ) {
-                                Text("Review", style = MaterialTheme.typography.labelSmall)
-                            }
-                        }
-                        Text(
-                            text = "Prepared categories based on file extension and local hash evidence.",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                        ) {
-                            StatusChip("42 Study", containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                            StatusChip("24 Websites", containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                            StatusChip("17 Movies", containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                            StatusChip("13 Products", containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                            StatusChip("63 Low-Value", containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         }
                     }
                 }
@@ -218,14 +180,10 @@ fun MediaScreen(model: KanoViewModel) {
                             }
                         }
                     }
-                    item {
-                        TextButton(
-                            onClick = { confirmForget = true },
-                            enabled = !busy,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Forget selected media index")
-                        }
+                }
+                item {
+                    TextButton(onClick = { confirmForget = true }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+                        Text("Forget selected media index")
                     }
                 }
             } else if (indexLoaded && !databaseError) {
@@ -260,29 +218,19 @@ private fun MediaRow(record: MediaRecord) {
     val (statusLabel, statusColor) = when (record.state) {
         "INDEXED" -> "INDEXED" to MaterialTheme.colorScheme.primaryContainer
         "METADATA_ONLY" -> "METADATA ONLY" to MaterialTheme.colorScheme.secondaryContainer
-        "ACCESS_REVOKED" -> "REVOKED" to MaterialTheme.colorScheme.error
+        "ACCESS_REVOKED" -> "REVOKED" to MaterialTheme.colorScheme.errorContainer
         "UNSUPPORTED" -> "UNSUPPORTED" to MaterialTheme.colorScheme.surfaceVariant
-        else -> "QUEUED" to MaterialTheme.colorScheme.surfaceVariant
+        "INDEXING" -> "INDEXING" to MaterialTheme.colorScheme.surfaceVariant
+        "ERROR" -> "ERROR · RETRY INDEX" to MaterialTheme.colorScheme.errorContainer
+        "QUEUED" -> "QUEUED" to MaterialTheme.colorScheme.surfaceVariant
+        else -> "UNKNOWN" to MaterialTheme.colorScheme.surfaceVariant
     }
 
     KanoGlassCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.FolderZip, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(8.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = record.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = size,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(Modifier.width(8.dp))
-            StatusChip(statusLabel, containerColor = statusColor)
-        }
+        Text(record.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(size, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(8.dp))
+        StatusChip(statusLabel, containerColor = statusColor,
+            contentColor = if (record.state == "ERROR" || record.state == "ACCESS_REVOKED") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface)
     }
 }

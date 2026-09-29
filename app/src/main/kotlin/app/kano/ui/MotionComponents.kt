@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,19 +55,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// Translucent Glassmorphism Surface
+val LocalGlassEnabled = staticCompositionLocalOf { true }
+val LocalMotionEnabled = staticCompositionLocalOf { false }
+
+// Readable translucent surfaces; no claim of a backdrop blur implementation.
 @Composable
 fun KanoGlassSurface(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 24.dp,
-    glassColor: Color = Color.White.copy(alpha = 0.82f),
-    borderColor: Color = Color.Black.copy(alpha = 0.08f),
+    glassColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
     content: @Composable () -> Unit,
 ) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(cornerRadius),
-        color = glassColor,
+        color = if (LocalGlassEnabled.current) glassColor else glassColor.copy(alpha = 1f),
         shadowElevation = 4.dp,
         border = BorderStroke(1.dp, borderColor),
         content = content,
@@ -78,8 +82,8 @@ fun KanoGlassSurface(
 fun KanoGlassCard(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 24.dp,
-    glassColor: Color = Color.White.copy(alpha = 0.85f),
-    borderColor: Color = Color.Black.copy(alpha = 0.08f),
+    glassColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     KanoGlassSurface(
@@ -156,22 +160,10 @@ fun KanoFloatingControl(
     contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     size: Dp = 52.dp,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "floatAnim")
-    val floatOffsetY by infiniteTransition.animateFloat(
-        initialValue = -2f,
-        targetValue = 2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "offsetY",
-    )
-
     Surface(
         onClick = onClick,
         modifier = modifier
-            .size(size)
-            .graphicsLayer { translationY = floatOffsetY },
+            .size(size.coerceAtLeast(48.dp)),
         shape = CircleShape,
         color = containerColor,
         shadowElevation = 6.dp,
@@ -193,8 +185,9 @@ fun KanoWaveBackground(
     modifier: Modifier = Modifier,
     waveColor: Color = KanoPeachContainer.copy(alpha = 0.45f),
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "waveAnim")
-    val waveShift by infiniteTransition.animateFloat(
+    val waveShift = if (LocalMotionEnabled.current) {
+        val infiniteTransition = rememberInfiniteTransition(label = "waveAnim")
+        val shift by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 100f,
         animationSpec = infiniteRepeatable(
@@ -202,7 +195,9 @@ fun KanoWaveBackground(
             repeatMode = RepeatMode.Reverse,
         ),
         label = "waveShift",
-    )
+        )
+        shift
+    } else 0f
 
     Canvas(modifier = modifier.fillMaxSize()) {
         val width = size.width
