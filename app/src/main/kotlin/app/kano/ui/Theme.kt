@@ -39,31 +39,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// --- UI 2.0 Bright Mode Palette (Inspired by Reference Images) ---
-val KanoCoralPrimaryLight = Color(0xFFFF3B1D) // Vibrant Red-Orange / Coral
+// --- Stitch Prototype "Warm Glass Intelligence" Palette ---
+val KanoCoralPrimaryLight = Color(0xFFFF3B1D) // Vibrant Red-Orange Primary
 val KanoCoralGradientStartLight = Color(0xFFFF5A36)
 val KanoCoralGradientEndLight = Color(0xFFE82E0E)
-val KanoOffWhiteBgLight = Color(0xFFF8F6F2) // Clean warm off-white canvas
+val KanoPeachAccentLight = Color(0xFFFF9F43) // Warm Peach Secondary
+val KanoOffWhiteBgLight = Color(0xFFF8F6F2) // Warm Off-White Canvas
 val KanoSurfaceWhiteLight = Color(0xFFFFFFFF)
 val KanoSurfaceNeutralLight = Color(0xFFF1EEE8)
 val KanoSurfaceNeutralHighLight = Color(0xFFE6E2D8)
-val KanoInkPrimaryLight = Color(0xFF111111) // Near-black primary text
-val KanoInkSecondaryLight = Color(0xFF666666) // Muted charcoal
+val KanoInkPrimaryLight = Color(0xFF111111) // Near-Black Text
+val KanoInkSecondaryLight = Color(0xFF666666) // Muted Charcoal
 val KanoPeachContainerLight = Color(0xFFFFEAE5)
 val KanoBlueContainerLight = Color(0xFFE8F2FF)
 val KanoGreenContainerLight = Color(0xFFE8F8F0)
 val KanoLavenderContainerLight = Color(0xFFF0ECF9)
 
-// --- UI 2.0 Dark Mode Palette (Nothing-Inspired Minimalist Command Center) ---
-val KanoCoralPrimaryDark = Color(0xFFFF3B1D) // Vibrant Orange-Red Accent
+// --- Stitch Nothing-Inspired Dark Palette ---
+val KanoCoralPrimaryDark = Color(0xFFFF3B1D) // Vibrant Red-Orange Accent
 val KanoCoralGradientStartDark = Color(0xFFFF5232)
 val KanoCoralGradientEndDark = Color(0xFFD82808)
+val KanoPeachAccentDark = Color(0xFFFF9F43)
 val KanoOffWhiteBgDark = Color(0xFF000000) // Pure Black Canvas
 val KanoSurfaceWhiteDark = Color(0xFF161616) // Deep Charcoal Surface
-val KanoSurfaceNeutralDark = Color(0xFF222222) // Tonal Card Surface
+val KanoSurfaceNeutralDark = Color(0xFF222222) // Elevated Surface
 val KanoSurfaceNeutralHighDark = Color(0xFF2C2C2C)
 val KanoInkPrimaryDark = Color(0xFFFFFFFF) // Crisp Warm White
-val KanoInkSecondaryDark = Color(0xFFA0A0A0) // Muted Gray
+val KanoInkSecondaryDark = Color(0xFFA0A0A0)
 val KanoPeachContainerDark = Color(0xFF3B120B)
 val KanoBlueContainerDark = Color(0xFF10253B)
 val KanoGreenContainerDark = Color(0xFF0E2E1B)
@@ -94,8 +96,8 @@ private val KanoLightColors = lightColorScheme(
     surfaceContainerHighest = Color(0xFFDCD6CC),
     primaryContainer = KanoPeachContainerLight,
     onPrimaryContainer = Color(0xFF5A0E00),
-    secondary = Color(0xFF333333),
-    onSecondary = Color.White,
+    secondary = KanoPeachAccentLight,
+    onSecondary = Color.Black,
     tertiaryContainer = KanoGreenContainerLight,
     secondaryContainer = KanoLavenderContainerLight,
     onSecondaryContainer = Color(0xFF21153B),
@@ -119,7 +121,7 @@ private val KanoDarkColors = darkColorScheme(
     surfaceContainerHighest = Color(0xFF383838),
     primaryContainer = KanoPeachContainerDark,
     onPrimaryContainer = Color(0xFFFFD1C7),
-    secondary = Color(0xFFCCCCCC),
+    secondary = KanoPeachAccentDark,
     onSecondary = Color.Black,
     tertiaryContainer = KanoGreenContainerDark,
     secondaryContainer = KanoLavenderContainerDark,

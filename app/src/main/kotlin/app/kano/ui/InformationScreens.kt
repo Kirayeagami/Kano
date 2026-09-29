@@ -1,6 +1,5 @@
 package app.kano.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,10 +18,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Checkroom
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.PermMedia
 import androidx.compose.material.icons.outlined.Sanitizer
 import androidx.compose.material.icons.outlined.Search
@@ -68,7 +71,7 @@ fun HomeScreen(
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // User Header Row
+            // Stitch Header
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -76,14 +79,14 @@ fun HomeScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Good evening, Kiray.",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
+                            text = "Good morning, Kiray.",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = "Two things need you.",
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.Bold,
+                            text = "Here is what needs your attention today.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Surface(
@@ -103,7 +106,7 @@ fun HomeScreen(
                 }
             }
 
-            // Rounded Query Input Bar (Inspired by Reference Images)
+            // Query Input Box (Inspired by Stitch Prototype)
             item {
                 OutlinedTextField(
                     value = queryText,
@@ -112,9 +115,9 @@ fun HomeScreen(
                     leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                     trailingIcon = {
                         Row(modifier = Modifier.padding(end = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Icon(Icons.Outlined.CameraAlt, contentDescription = "Camera Scan", modifier = Modifier.size(20.dp))
+                            Icon(Icons.Outlined.CameraAlt, contentDescription = "Scan", modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
-                            Icon(Icons.Outlined.Mic, contentDescription = "Voice Input", modifier = Modifier.size(20.dp))
+                            Icon(Icons.Outlined.Mic, contentDescription = "Voice", modifier = Modifier.size(20.dp))
                         }
                     },
                     shape = RoundedCornerShape(28.dp),
@@ -129,7 +132,7 @@ fun HomeScreen(
                 )
             }
 
-            // Hero Brief Card
+            // Daily Priority Brief Hero Card (Stitch Board 1)
             item {
                 KanoGlassCard(cornerRadius = 24.dp) {
                     Row(
@@ -137,85 +140,125 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = "HOME BRIEF",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        StatusChip("1 of 3 resolved")
+                        StatusChip("DAILY PRIORITY BRIEF", containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
+                        Text("08:12 AM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(10.dp))
 
                     Text(
-                        text = "Device storage is at 72% capacity and 2 personal care items are running low (~15%).",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = "3 verified updates ready for your review",
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
+                    )
+
+                    Spacer(Modifier.height(4.dp))
+
+                    Text(
+                        text = "Extracted from your private memory feed, local clipboard, and style tracker. Zero data leaves your device.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
                     Spacer(Modifier.height(14.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         KanoHeroButton(
-                            onClick = openDevice,
+                            onClick = openVault,
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("Resolve Now", fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("Review 3 Items", fontWeight = FontWeight.Bold, color = Color.White)
+                            Spacer(Modifier.width(4.dp))
+                            Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = Color.White)
                         }
                         KanoOutlinedButton(
                             onClick = {},
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("Not now")
+                            Text("Dismiss")
                         }
-                    }
-
-                    Spacer(Modifier.height(12.dp))
-
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = "💡 Local-first intelligence · Zero cloud data egress",
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
                     }
                 }
             }
 
-            // Services & Intelligence Category Grid
+            // Real-Time Telemetry Grid (2x2)
             item {
                 Text(
-                    text = "Personal Assistant Services",
+                    text = "REAL-TIME TELEMETRY",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(Modifier.height(8.dp))
+
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        TelemetryCard("Device Health", "Healthy", "128 GB free (72% cap)", KanoGreenContainer, Modifier.weight(1f), openDevice)
+                        TelemetryCard("Knowledge Hub", "16 Items", "12 min ago", KanoPeachContainer, Modifier.weight(1f), openVault)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        TelemetryCard("Media Index", "239 Docs", "18 duplicates", KanoBlueContainer, Modifier.weight(1f), openMedia)
+                        TelemetryCard("Style & Wardrobe", "Daily Fit", "12 items synced", KanoLavenderContainer, Modifier.weight(1f), openStyle)
+                    }
+                }
+            }
+
+            // Urgent & Actionable Cards (Stitch Board 1)
+            item {
+                Text(
+                    text = "Urgent & Actionable",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.height(8.dp))
 
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    CategoryTile("Device", Icons.Outlined.Smartphone, KanoBlueContainer, openDevice)
-                    CategoryTile("Media", Icons.Outlined.PermMedia, KanoGreenContainer, openMedia)
-                    CategoryTile("Vault", Icons.Outlined.Lightbulb, KanoPeachContainer, openVault)
-                    CategoryTile("Style", Icons.Outlined.Checkroom, KanoLavenderContainer, openStyle)
-                    CategoryTile("Care", Icons.Outlined.Sanitizer, KanoPeachContainer, openPersonalCare)
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    // Action Item 1
+                    KanoGlassCard {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            StatusChip("WEBSITE PARSED", containerColor = MaterialTheme.colorScheme.primaryContainer)
+                            Spacer(Modifier.weight(1f))
+                            Text("11m ago", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Spacer(Modifier.height(6.dp))
+                        Text("Dieter Rams Archive & Exhibition", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("https://design-museum.org/retro...", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.height(10.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            KanoOutlinedButton(onClick = openVault, modifier = Modifier.weight(1f)) { Text("View File") }
+                            KanoButton(onClick = openVault, modifier = Modifier.weight(1f)) {
+                                Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("Open Link")
+                            }
+                        }
+                    }
+
+                    // Action Item 2
+                    KanoGlassCard(glassColor = KanoPeachContainer.copy(alpha = 0.88f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            StatusChip("INVENTORY LOW ALERT", containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer)
+                            Spacer(Modifier.weight(1f))
+                            Text("15%", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                        }
+                        Spacer(Modifier.height(6.dp))
+                        Text("Morning Hydrating Mist", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("Approx. 15% (3–4 days left based on daily log)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.height(10.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            KanoButton(onClick = openPersonalCare, modifier = Modifier.weight(1f)) { Text("Reorder Item") }
+                            KanoOutlinedButton(onClick = openPersonalCare, modifier = Modifier.weight(1f)) { Text("Record Use") }
+                        }
+                    }
                 }
             }
 
-            // Local Sandbox Boundary Note
+            // Quick Capture Floating Hero Action
             item {
-                KanoGlassCard {
-                    Text("100% Local Privacy Boundary", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("Zero Internet permission. Your files, media index, and personal inventory remain on this device.", style = MaterialTheme.typography.bodySmall)
-                    Text("Build ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                KanoHeroButton(onClick = openMedia, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.FlashOn, contentDescription = null, tint = Color.White)
+                    Spacer(Modifier.width(8.dp))
+                    Text("⚡ Quick Capture & Index", fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
@@ -223,29 +266,29 @@ fun HomeScreen(
 }
 
 @Composable
-private fun CategoryTile(
-    label: String,
-    icon: ImageVector,
+private fun TelemetryCard(
+    title: String,
+    status: String,
+    detail: String,
     bgColor: Color,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
         color = bgColor,
-        modifier = Modifier.width(105.dp).height(90.dp),
+        modifier = modifier.height(105.dp),
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(14.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Icon(imageVector = icon, contentDescription = label, tint = Color(0xFF111111), modifier = Modifier.size(24.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF111111),
-            )
+            Text(title, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color(0xFF111111))
+            Column {
+                Text(status, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFF111111))
+                Text(detail, style = MaterialTheme.typography.labelSmall, color = Color(0xFF333333))
+            }
         }
     }
 }
