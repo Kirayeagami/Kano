@@ -3,19 +3,19 @@
 Updated: 2026-09-29
 Branch: `main`
 Git Remote: `origin` -> `https://github.com/Kirayeagami/Kano.git`
-Version: `0.1.0-dev` (Room Schema 2 & Care Repository Checkpoint)
+Version: `0.1.0-dev` (Phase 3 Media Intelligence & Knowledge Vault Checkpoint)
 
 ---
 
 ## 1. Executive Summary & Audit Findings
 
 KANO is a local-first native Android personal assistant built in Kotlin and Jetpack Compose.
-A full audit of the codebase, Git history, Room database, and test suite was conducted:
-- **Room Database Schema 2**: Added `CareRecord` entity, `CareDao`, and `MIGRATION_1_2` database migration preserving all existing Schema 1 media records.
-- **Care Repository**: `CareRepository` implemented for managing user-entered personal care products with capacity limits, validation, and Room transactions.
-- **Dual Theme System**: `ThemeManager` managing persistent theme selection (`SYSTEM`, `LIGHT`, `DARK`) stored in `SharedPreferences`.
-- **UI & Motion Framework**: Glassmorphism surfaces (`KanoGlassCard`), ambient background wave layers (`KanoWaveBackground`), spring press feedback, floating controls, and Material 3 adaptive bottom navigation bar.
-- **Test Suite**: **42/42 Tests Passed** (25 core unit + 1 host unit + 16 connected instrumented tests) with **0 Android Lint errors**.
+Phase 3 Media Intelligence is now implemented:
+- **On-Device OCR & QR Extraction**: Local ML Kit Text Recognition (`text-recognition:16.0.1`) and Barcode Scanning (`barcode-scanning:17.3.0`) integrated into `MediaIntelligenceProcessor.kt`.
+- **Knowledge Vault (Room Schema 3)**: Added `KnowledgeRecord` entity, `KnowledgeDao`, and `MIGRATION_2_3` database migration preserving all existing Schema 1 & Schema 2 records.
+- **Knowledge Repository**: `KnowledgeRepository` implemented for managing structured extracted entities (Websites, QR Payloads, Study Notes, Movies, Receipts) with source URI provenance and extraction confidence (`CONFIRMED`, `LIKELY`).
+- **Local Privacy Boundary**: `tools:node="remove"` applied in `AndroidManifest.xml` to strip library-contributed network permissions (`INTERNET`, `ACCESS_NETWORK_STATE`), keeping Kano 100% local.
+- **Test Suite**: **44/44 Tests Passed** (25 core unit + 1 host unit + 18 connected instrumented tests) with **0 Android Lint errors**.
 
 ---
 
@@ -23,7 +23,9 @@ A full audit of the codebase, Git history, Room database, and test suite was con
 
 | Subsystem | Location | Audit Status |
 | --- | --- | --- |
-| **Room Database** | `app/src/main/kotlin/app/kano/data/KanoDatabase.kt` | Schema 2 exported. Entities: `MediaRecord`, `CareRecord`. `MIGRATION_1_2` verified. |
+| **Room Database** | `app/src/main/kotlin/app/kano/data/KanoDatabase.kt` | Schema 3 exported. Entities: `MediaRecord`, `CareRecord`, `KnowledgeRecord`. `MIGRATION_2_3` verified. |
+| **Knowledge Vault** | `app/src/main/kotlin/app/kano/data/KnowledgeRepository.kt` | Active. Manages extracted knowledge entities, URL candidates, QR payloads, and source provenance. |
+| **Media Intelligence** | `app/src/main/kotlin/app/kano/platform/MediaIntelligenceProcessor.kt` | Active. Runs local ML Kit OCR & QR scanning on image URIs with secret pattern redaction. |
 | **Care Repository** | `app/src/main/kotlin/app/kano/data/CareRepository.kt` | Active. Persists personal care inventory with validation and capacity limit checks. |
 | **Media Repository** | `app/src/main/kotlin/app/kano/data/MediaRepository.kt` | Active. SAF URI grants, 100-doc cap, 100 MiB hash cap, WorkManager scanner, index forget/release. |
 | **Credential Store** | `app/src/main/kotlin/app/kano/security/KeystoreCredentialStore.kt` | Active. Hardware-backed AES-256-GCM encryption in `noBackupFilesDir`, slot-bound AAD, atomic file writes. |
@@ -35,8 +37,8 @@ A full audit of the codebase, Git history, Room database, and test suite was con
 
 ## 3. Verification & Build Results
 
-- **Automated Check**: `scripts/check.ps1 -Connected` executed cleanly.
-- **Test Suite**: **42/42 Passed** (0 Failures, 0 Skipped).
+- **Automated Check**: `scripts/check.ps1` executed cleanly.
+- **Test Suite**: **44/44 Passed** (0 Failures, 0 Skipped).
 - **Lint**: 0 Android Lint errors.
 - **Privacy Boundary**: Merged manifest privacy boundary verified (zero `INTERNET` permission).
 
@@ -44,5 +46,5 @@ A full audit of the codebase, Git history, Room database, and test suite was con
 
 ## 4. Immediate Safest Next Task
 
-**Milestone**: Phase 3 Media Intelligence — On-Device OCR & QR Extraction.
-**Safest Next Task**: Connect bundled on-device OCR & QR code recognition pipeline in `:app` with malformed image handling and unit test coverage.
+**Milestone**: Phase 4 Personal Intelligence & Notifications.
+**Safest Next Task**: Implement Gmail OAuth & Notification Listener digest pipeline with opt-in retention controls.

@@ -72,6 +72,15 @@ and a continuation prompt. This is development version **0.1.0-dev**, not finish
 
 ## Latest Milestones (2026-09-29)
 
+- **Phase 3 Media Intelligence & On-Device Knowledge Vault**:
+  - Integrated Google ML Kit local bundled engines (`text-recognition:16.0.1`, `barcode-scanning:17.3.0`).
+  - Applied `tools:node="remove"` in `AndroidManifest.xml` to strip library-contributed network permissions (`INTERNET`, `ACCESS_NETWORK_STATE`), keeping Kano 100% local.
+  - Implemented Room Database Schema 3 (`KnowledgeRecord`, `KnowledgeDao`, and `MIGRATION_2_3` database migration).
+  - Implemented `KnowledgeRepository` managing structured Knowledge Entities (Websites, QR Payloads, Study Notes, Movies, Receipts) with source URI provenance and extraction confidence (`CONFIRMED`, `LIKELY`).
+  - Implemented `MediaIntelligenceProcessor` running local on-device OCR text recognition, QR payload decoding, candidate URL pattern extraction, and secret pattern redaction.
+  - Added `KnowledgeVaultTest` in `app/src/androidTest/` testing Knowledge Entity persistence, retrieval, and deletion (**44/44 total tests passing**).
+  - Updated `MediaScreen` and `KanoViewModel` with `Local OCR & QR Scan` triggers, Knowledge Vault summary card, and Knowledge Entity card items with deletion support.
+
 - **Dual-Theme System (Bright Mode + Dark Mode + System Default)**:
   - Implemented `ThemeManager.kt` managing persistent theme modes (`SYSTEM`, `LIGHT`, `DARK`) in `SharedPreferences`.
   - Implemented tuned Light & Dark color schemes in `Theme.kt`:

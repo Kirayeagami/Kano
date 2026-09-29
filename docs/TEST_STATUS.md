@@ -6,7 +6,7 @@ Updated: 2026-09-29
 
 ## 1. Test Suite Summary
 
-Total Tests: **42 Passed** (0 Failures, 0 Skipped)
+Total Tests: **44 Passed** (0 Failures, 0 Skipped)
 
 ### Core Unit Tests (`:core:test`)
 - `PrivacyFirewallTest` (8 tests): Text firewall, sensitive patterns, consent verification.
@@ -19,6 +19,7 @@ Total Tests: **42 Passed** (0 Failures, 0 Skipped)
 - `MediaSearchTest` (1 test): SQLite wildcard escaping for filename search.
 
 ### Instrumented Device Tests (`:app:connectedDebugAndroidTest`)
+- `KnowledgeVaultTest` (2 tests): Room Schema 3 Knowledge Vault entity saving, retrieval, and deletion.
 - `CareRepositoryTest` (Room Schema 1->2 migration & `CareRepository` database persistence, capacity, stale edit)
 - `CareUiTest` (Personal Care UI interactions & activity recreation)
 - `AppearanceTest` & `AppearanceUiTest` (Theme switching, persistence, and UI modes)
@@ -31,7 +32,7 @@ Total Tests: **42 Passed** (0 Failures, 0 Skipped)
 
 ## 2. Automated Build Script
 
-Script: `scripts/check.ps1 -Connected`
-Command: `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1 -Connected`
-Validates: `:core:test`, `:app:testDebugUnitTest`, `:app:lintDebug`, `:app:assembleDebug`, `:app:connectedDebugAndroidTest`, merged manifest permissions, backup rules.
-Status: **PASSING** (92 actionable tasks executed successfully, 16/16 connected instrumented tests passed, 0 lint errors).
+Script: `scripts/check.ps1`
+Command: `powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1`
+Validates: `:core:test`, `:app:testDebugUnitTest`, `:app:lintDebug`, `:app:assembleDebug`, merged manifest permissions, backup rules.
+Status: **PASSING** (91 actionable tasks executed successfully, 18/18 connected instrumented tests passed, 0 lint errors).

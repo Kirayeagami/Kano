@@ -6,10 +6,12 @@ import androidx.room.Room
 import androidx.work.WorkManager
 import app.kano.core.AiRouter
 import app.kano.core.PrivacyFirewall
-import app.kano.data.KanoDatabase
 import app.kano.data.CareRepository
+import app.kano.data.KanoDatabase
+import app.kano.data.KnowledgeRepository
 import app.kano.data.MediaRepository
 import app.kano.platform.DeviceReader
+import app.kano.platform.MediaIntelligenceProcessor
 import app.kano.security.KeystoreCredentialStore
 import app.kano.ui.ThemeManager
 
@@ -19,12 +21,14 @@ class KanoApplication : Application() {
 
 class AppGraph(context: Context) {
     val database = Room.databaseBuilder(context, KanoDatabase::class.java, "kano.db")
-        .addMigrations(KanoDatabase.MIGRATION_1_2).build()
+        .addMigrations(KanoDatabase.MIGRATION_1_2, KanoDatabase.MIGRATION_2_3).build()
     val care = CareRepository(database)
+    val knowledge = KnowledgeRepository(database)
     val media = MediaRepository(context, database.media())
     val device = DeviceReader(context)
     val work: WorkManager = WorkManager.getInstance(context)
     val ai = AiRouter(emptyList(), PrivacyFirewall())
     val credentials by lazy { KeystoreCredentialStore(context) }
     val themeManager = ThemeManager(context)
+    val mediaProcessor by lazy { MediaIntelligenceProcessor(context, knowledge) }
 }

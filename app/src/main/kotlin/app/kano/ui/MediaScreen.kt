@@ -20,7 +20,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.outlined.FolderZip
+import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -42,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.work.WorkInfo
+import app.kano.data.KnowledgeRecord
 import app.kano.data.MediaRecord
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -55,6 +59,9 @@ fun MediaScreen(model: KanoViewModel) {
     val jobs by model.jobs.collectAsStateWithLifecycle()
     val databaseError by model.databaseError.collectAsStateWithLifecycle()
     val indexLoaded by model.indexLoaded.collectAsStateWithLifecycle()
+    val knowledgeEntities by model.knowledgeEntities.collectAsStateWithLifecycle()
+    val knowledgeCount by model.knowledgeCount.collectAsStateWithLifecycle()
+
     var confirmForget by remember { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments(), model::select)
     val active = jobs.any { !it.state.isFinished }
@@ -67,7 +74,7 @@ fun MediaScreen(model: KanoViewModel) {
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item { SectionTitle("Media & Screenshots", "Choose photos or videos to index locally. Kano keeps metadata and a content hash, not a copy of your files.") }
+            item { SectionTitle("Media & Knowledge Vault", "Choose photos or videos to index locally. Kano extracts text, QR codes, and URLs into your local Knowledge Vault.") }
 
             // Document Selection Header Card
             item {
@@ -109,6 +116,35 @@ fun MediaScreen(model: KanoViewModel) {
                             Text("Refresh index")
                         }
                     }
+                }
+            }
+
+            // Extracted Knowledge Vault Summary Card
+            if (knowledgeCount > 0) {
+                item {
+                    KanoGlassCard(glassColor = KanoPeachContainer.copy(alpha = 0.88f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.Lightbulb, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "Knowledge Vault ($knowledgeCount Items)",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f),
+                            )
+                            StatusChip("LOCAL VAULT")
+                        }
+                        Text(
+                            text = "Extracted URLs, QR payloads, and study notes from your local OCR scans.",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                items(knowledgeEntities, key = { it.id }) { entity ->
+                    KnowledgeEntityCard(entity = entity, onDelete = { model.deleteKnowledgeEntity(it) })
                 }
             }
 
@@ -157,7 +193,7 @@ fun MediaScreen(model: KanoViewModel) {
                 if (rows.isEmpty()) {
                     item { Text("No items match your search on this page.") }
                 } else {
-                    items(rows, key = { it.uri }) { MediaRow(it) }
+                    items(rows, key = { it.uri }) { MediaRow(it, onOcrScan = { model.runMediaOcr(it) }, busy = busy) }
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -212,7 +248,7 @@ fun MediaScreen(model: KanoViewModel) {
 }
 
 @Composable
-private fun MediaRow(record: MediaRecord) {
+private fun MediaRow(record: MediaRecord, onOcrScan: () -> Unit, busy: Boolean) {
     val context = LocalContext.current
     val size = record.sizeBytes?.let { Formatter.formatFileSize(context, it) } ?: "Size unavailable"
     val (statusLabel, statusColor) = when (record.state) {
@@ -227,10 +263,44 @@ private fun MediaRow(record: MediaRecord) {
     }
 
     KanoGlassCard {
-        Text(record.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Text(size, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(8.dp))
-        StatusChip(statusLabel, containerColor = statusColor,
-            contentColor = if (record.state == "ERROR" || record.state == "ACCESS_REVOKED") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(record.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(size, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            StatusChip(statusLabel, containerColor = statusColor,
+                contentColor = if (record.state == "ERROR" || record.state == "ACCESS_REVOKED") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface)
+        }
+        Spacer(Modifier.height(10.dp))
+        KanoOutlinedButton(
+            onClick = onOcrScan,
+            enabled = !busy && record.state != "ACCESS_REVOKED",
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Icon(Icons.Outlined.DocumentScanner, contentDescription = null)
+            Spacer(Modifier.width(6.dp))
+            Text("Local OCR & QR Scan")
+        }
+    }
+}
+
+@Composable
+private fun KnowledgeEntityCard(entity: KnowledgeRecord, onDelete: (String) -> Unit) {
+    KanoGlassCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(entity.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text("Type: ${entity.entityType} · Source: Local OCR", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            }
+            IconButton(onClick = { onDelete(entity.id) }) {
+                Icon(Icons.Outlined.Delete, contentDescription = "Delete Knowledge Entity")
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+        Text(entity.detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (!entity.urlOrPayload.isNullOrBlank()) {
+            Spacer(Modifier.height(4.dp))
+            Text("Payload / Link: ${entity.urlOrPayload}", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+        }
     }
 }

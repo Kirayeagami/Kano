@@ -1,6 +1,7 @@
 package app.kano.ui
 
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -8,10 +9,10 @@ import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import app.kano.AppGraph
+import app.kano.data.CareStatus
+import app.kano.data.KnowledgeRecord
 import app.kano.data.MediaRecord
 import app.kano.data.MediaRepository
-import app.kano.data.CareRecord
-import app.kano.data.CareStatus
 import app.kano.platform.DeviceSnapshot
 import app.kano.platform.MediaIndexWorker
 import kotlinx.coroutines.CancellationException
@@ -67,6 +68,47 @@ class KanoViewModel(private val graph: AppGraph) : ViewModel() {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CareState.Loading)
     val careSaving = MutableStateFlow(false)
     val careError = MutableStateFlow<String?>(null)
+
+    // Knowledge Vault & Media OCR States
+    val knowledgeEntities = graph.knowledge.allEntities
+        .catch { emit(emptyList()) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<KnowledgeRecord>())
+    val knowledgeCount = graph.knowledge.totalCount
+        .catch { emit(0) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
+    fun runMediaOcr(record: MediaRecord) {
+        if (busy.value) return
+        busy.value = true
+        viewModelScope.launch {
+            try {
+                val result = graph.mediaProcessor.processImageUri(record.uri.toUri())
+                message.value = when {
+                    result.recognizedEntities > 0 -> "Local scan complete: ${result.recognizedEntities} knowledge items extracted into Vault."
+                    !result.qrPayload.isNullOrBlank() -> "QR code extracted: ${result.qrPayload}"
+                    !result.extractedText.isNullOrBlank() -> "OCR text recognized locally. Saved to Knowledge Vault."
+                    else -> "Local OCR scan finished: No readable text or QR codes detected in this document."
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                message.value = "Local OCR scan failed for this document. Verify file read grant."
+            } finally {
+                busy.value = false
+            }
+        }
+    }
+
+    fun deleteKnowledgeEntity(id: String) {
+        viewModelScope.launch {
+            try {
+                graph.knowledge.delete(id)
+                message.value = "Knowledge entity removed from local Vault."
+            } catch (_: Exception) {
+                message.value = "Could not delete knowledge entity."
+            }
+        }
+    }
 
     fun saveCare(id: String?, name: String, category: String, status: CareStatus, done: () -> Unit) = careMutation(done) {
         graph.care.save(id, name, category, status)
