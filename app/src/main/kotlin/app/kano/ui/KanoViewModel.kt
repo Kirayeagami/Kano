@@ -63,6 +63,7 @@ class KanoViewModel(private val graph: AppGraph) : ViewModel() {
     val storageAccessRefreshing = MutableStateFlow(true)
     private var storageAccessJob: Job? = null
     val storageFilter = MutableStateFlow("ALL")
+    val storageSort = MutableStateFlow("SIZE_DESC")
     val storagePage = MutableStateFlow(0)
     val temporaryBytes = MutableStateFlow<Long?>(null)
     val storageScan = graph.database.storage().observeScan()
@@ -78,8 +79,8 @@ class KanoViewModel(private val graph: AppGraph) : ViewModel() {
     val storageDuplicates = graph.database.storage().duplicates()
         .catch { storageError.value = "Duplicate results unavailable."; emit(emptyList()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    val storageRows = combine(storageFilter, storagePage) { filter, page -> filter to page }
-        .flatMapLatest { (filter, page) -> graph.database.storage().page(filter, 100L * 1024 * 1024, 40, page * 40).onStart { emit(emptyList()) } }
+    val storageRows = combine(storageFilter, storagePage, storageSort) { filter, page, sort -> Triple(filter, page, sort) }
+        .flatMapLatest { (filter, page, sort) -> graph.database.storage().pageSorted(filter, 100L * 1024 * 1024, sort, 40, page * 40).onStart { emit(emptyList()) } }
         .catch { storageError.value = "Storage file list unavailable."; emit(emptyList()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     fun currentStorageAccess() = graph.storageSources.access()
@@ -118,6 +119,7 @@ class KanoViewModel(private val graph: AppGraph) : ViewModel() {
         storageAccess.value = currentStorageAccess()
     }
     fun setStorageFilter(value: String) { storagePage.value = 0; storageFilter.value = value }
+    fun setStorageSort(value: String) { storagePage.value = 0; storageSort.value = value }
     fun nextStoragePage(direction: Int) { storagePage.value = (storagePage.value + direction).coerceAtLeast(0) }
     suspend fun storageDuplicateMembers(hash: String) = withContext(Dispatchers.IO) { graph.database.storage().duplicateMembers(hash) }
     private fun storageAction(action: suspend () -> Unit) { viewModelScope.launch {
