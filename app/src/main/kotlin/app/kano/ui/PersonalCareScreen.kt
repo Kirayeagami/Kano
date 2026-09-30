@@ -1,58 +1,33 @@
 package app.kano.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Sanitizer
-import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.kano.data.CareRecord
-import app.kano.data.CareStatus
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
+import app.kano.data.*
+import kotlinx.coroutines.flow.*
 
 sealed interface CareState {
     data object Loading : CareState
     data object Failed : CareState
     data class Ready(val items: List<CareRecord>) : CareState
 }
-
 fun Flow<List<CareRecord>>.mapCareState(): Flow<CareState> =
     map<List<CareRecord>, CareState> { CareState.Ready(it) }.catch { emit(CareState.Failed) }
 
 @Composable
-fun PersonalCareScreen(model: KanoViewModel? = null) {
+fun PersonalCareScreen(model: KanoViewModel? = null, openCamera: (() -> Unit)? = null, footerInset: androidx.compose.ui.unit.Dp = 0.dp) {
     val state = model?.careItems?.collectAsStateWithLifecycle()?.value ?: CareState.Ready(emptyList())
     val saving = model?.careSaving?.collectAsStateWithLifecycle()?.value ?: false
     val error = model?.careError?.collectAsStateWithLifecycle()?.value
@@ -62,113 +37,58 @@ fun PersonalCareScreen(model: KanoViewModel? = null) {
     var category by rememberSaveable { mutableStateOf("") }
     var status by rememberSaveable { mutableStateOf(CareStatus.UNKNOWN.name) }
     var deleteId by rememberSaveable { mutableStateOf<String?>(null) }
-
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        item { SectionTitle("Personal Care", "Track products you own and avoid overspending.") }
-
-        // Header & Product Actions Card (Inspired by Reference Images)
+    var categoryFilter by rememberSaveable { mutableStateOf("All") }
+    val records = (state as? CareState.Ready)?.items.orEmpty()
+    val colors = KanoThemeColors
+    LazyColumn(modifier = Modifier.testTag("care-list"), contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 20.dp + footerInset), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item { SectionTitle("Personal Care", "Know what you have. Choose what you need.") }
         item {
-            KanoGlassCard(cornerRadius = 24.dp) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Outlined.Sanitizer,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "Grooming & Care Inventory",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f),
-                    )
-                    StatusChip("LOCAL INVENTORY")
-                }
-
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    text = "Record products you actively use. Kano prevents duplicate purchases by tracking stock status.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(Modifier.height(14.dp))
-                KanoHeroButton(
-                    onClick = {
-                        editingId = null; name = ""; category = ""; status = CareStatus.ACTIVE.name
-                        model?.careError?.value = null; editing = true
-                    },
-                    enabled = model != null && state is CareState.Ready && !saving &&
-                        (state as? CareState.Ready)?.items.orEmpty().size < 200,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
-                    Spacer(Modifier.width(6.dp))
-                    Text("Add Product to Inventory", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+            if (state is CareState.Ready) {
+                Text("${records.size} saved · ${records.count { it.status == CareStatus.ACTIVE.name }} marked active · ${records.count { it.status in setOf(CareStatus.LOW.name, CareStatus.NEARLY_EMPTY.name) }} marked low", style = MaterialTheme.typography.labelMedium, color = colors.textPrimary)
+                Text("Stock status is user entered. No purchase decision is inferred.", style = MaterialTheme.typography.bodySmall, color = colors.textSecondary)
+            }
+        }
+        item {
+            KanoHeroButton(onClick = {
+                editingId = null; name = ""; category = ""; status = CareStatus.ACTIVE.name
+                model?.careError?.value = null; editing = true
+            }, enabled = model != null && state is CareState.Ready && !saving && records.size < 200) { Text("Add Product to Inventory") }
+            Spacer(Modifier.height(8.dp))
+            KanoOutlinedButton({ openCamera?.invoke() }, enabled = openCamera != null, modifier = Modifier.fillMaxWidth()) { Text("Read a product label with Kano Vision") }
+            Text("Local text/QR only. Product identity and ingredients require your review.", style = MaterialTheme.typography.bodySmall, color = colors.textTertiary, modifier = Modifier.padding(top = 4.dp))
+        }
+        item {
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("All", "Skincare", "Hair", "Grooming", "Oral", "Everyday").forEach { option ->
+                    FilterChip(categoryFilter == option, { categoryFilter = option }, label = { Text(option) })
                 }
             }
         }
-
-        // Anti-Overspending Smart Check
-        item {
-            val itemCount = (state as? CareState.Ready)?.items.orEmpty().size
-            KanoGlassCard(glassColor = KanoGreenContainer.copy(alpha = 0.88f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "Anti-Overspending Smart Check",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f),
-                    )
-                    StatusChip(if (itemCount > 0) "CHECK PASSED" else "EMPTY INVENTORY")
-                }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = if (itemCount > 0) "NO PURCHASE NEEDED — You already own $itemCount active care products in your inventory."
-                           else "NO ACTIVE PRODUCTS — Add your current products to enable anti-overspending checks.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-        }
-
-        // Product Inventory List
         when (state) {
-            CareState.Loading -> item { Text("Loading your inventory…") }
-            CareState.Failed -> item { Text("Inventory could not be read. Reopen Kano to retry. No records were removed.") }
+            CareState.Loading -> item { KanoStateSurface("Reading inventory", "Loading this device's saved records.", true) }
+            CareState.Failed -> item { KanoStateSurface("Inventory unavailable", "Reopen Kano to retry. An empty inventory is not assumed.") }
             is CareState.Ready -> {
-                if (state.items.isEmpty()) item {
+                val shown = records.filter { categoryFilter == "All" || it.category.equals(categoryFilter, true) }
+                if (shown.isEmpty()) item { KanoStateSurface(if (records.isEmpty()) "No products saved yet." else "No products in this category", "Add only products you own. Change status when you review stock.") }
+                items(shown, key = { it.id }) { product ->
                     KanoGlassCard {
-                        Text("No products saved yet.", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("Start by tapping 'Add Product to Inventory' above to track what you use.", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
-                    }
-                }
-                items(state.items, key = { it.id }) { product ->
-                    KanoGlassCard {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(product.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                if (product.category.isNotBlank()) Text(product.category, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            StatusChip(
-                                text = CareStatus.entries.find { it.name == product.status }?.label ?: "Unknown",
-                                containerColor = when (product.status) {
-                                    "ACTIVE" -> MaterialTheme.colorScheme.primaryContainer
-                                    "LOW", "NEARLY_EMPTY" -> MaterialTheme.colorScheme.errorContainer
-                                    else -> MaterialTheme.colorScheme.surfaceVariant
-                                },
-                            )
-                        }
-
-                        Spacer(Modifier.height(8.dp))
+                        Text(product.name, style = MaterialTheme.typography.titleLarge, color = colors.textPrimary)
+                        if (product.category.isNotBlank()) Text(product.category, style = MaterialTheme.typography.labelMedium, color = colors.textSecondary)
+                        StatusChip(CareStatus.entries.find { it.name == product.status }?.label ?: "Unknown")
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(enabled = !saving, onClick = {
-                                editingId = product.id; name = product.name; category = product.category
-                                status = product.status; model?.careError?.value = null; editing = true
-                            }) { Text("Edit") }
-                            TextButton(enabled = !saving, onClick = { model?.careError?.value = null; deleteId = product.id }) { Text("Delete") }
+                            TextButton(
+                                enabled = !saving,
+                                onClick = {
+                                    editingId = product.id; name = product.name; category = product.category
+                                    status = product.status; model?.careError?.value = null; editing = true
+                                },
+                                colors = ButtonDefaults.textButtonColors(contentColor = colors.accent)
+                            ) { Text("Edit") }
+                            TextButton(
+                                enabled = !saving,
+                                onClick = { model?.careError?.value = null; deleteId = product.id },
+                                colors = ButtonDefaults.textButtonColors(contentColor = colors.error)
+                            ) { Text("Delete") }
                         }
                     }
                 }
@@ -225,3 +145,4 @@ fun PersonalCareScreen(model: KanoViewModel? = null) {
         dismissButton = { TextButton(enabled = !saving, onClick = { deleteId = null }) { Text("Keep Product") } },
     )
 }
+

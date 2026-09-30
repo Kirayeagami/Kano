@@ -11,7 +11,9 @@ class AppearanceUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
     @Test fun manualThemeControlsSystemBarContrastAndSurvivesRecreation() {
-        compose.onNodeWithText("Privacy").performClick()
+        compose.onNodeWithContentDescription("Open menu").performClick()
+        compose.onNodeWithText("Settings").performClick()
+        compose.onNodeWithText("Appearance").performClick()
         val darkChoice = hasText("Dark") or hasText("Selected · Dark")
         compose.onNode(hasScrollAction()).performScrollToNode(darkChoice)
         compose.onNode(darkChoice).performClick()

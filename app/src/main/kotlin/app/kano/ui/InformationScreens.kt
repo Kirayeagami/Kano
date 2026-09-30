@@ -1,365 +1,318 @@
 package app.kano.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
+import android.text.format.Formatter
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Checkroom
-import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.FlashOn
-import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.PermMedia
-import androidx.compose.material.icons.outlined.Sanitizer
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Smartphone
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.unit.Dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import app.kano.R
 import app.kano.BuildConfig
+import kotlinx.coroutines.delay
+import java.text.DateFormat
+import java.util.Date
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun HomeScreen(
-    openDevice: () -> Unit,
-    openMedia: () -> Unit,
-    openStyle: () -> Unit,
-    openPersonalCare: () -> Unit,
-    openVault: () -> Unit = {},
-) {
-    var queryText by remember { mutableStateOf("") }
-
-    Box(Modifier.fillMaxSize()) {
-        KanoWaveBackground()
-
-        LazyColumn(
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            // Stitch Header
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Good morning, Kiray.",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(
-                            text = "Here is what needs your attention today.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+fun HomeScreen(openDevice: () -> Unit, openMedia: () -> Unit, openStyle: () -> Unit,
+    openPersonalCare: () -> Unit, openVault: () -> Unit = {}, openCamera: () -> Unit = {},
+    model: KanoViewModel? = null, openShopping: () -> Unit = {}, openSavedDocuments: () -> Unit = openMedia, footerInset: Dp = 0.dp) {
+    val context = LocalContext.current
+    val device = model?.device?.collectAsStateWithLifecycle()?.value
+    val knowledge = model?.knowledgeEntities?.collectAsStateWithLifecycle()?.value.orEmpty()
+    val knowledgeError = model?.knowledgeError?.collectAsStateWithLifecycle()?.value ?: false
+    val care = model?.careItems?.collectAsStateWithLifecycle()?.value
+    val rows = model?.rows?.collectAsStateWithLifecycle()?.value.orEmpty()
+    val scanning = model?.visionAnalyzing?.collectAsStateWithLifecycle()?.value ?: false
+    var query by rememberSaveable { mutableStateOf("") }
+    val clock by produceState(System.currentTimeMillis()) { while (true) { value = System.currentTimeMillis(); delay(60_000) } }
+    val lower = query.lowercase()
+    val focus = when {
+        lower.contains("storage") || lower.contains("space") -> "Storage"
+        Regex("\\bram\\b").containsMatchIn(lower) || lower.contains("memory usage") -> "RAM"
+        lower.contains("battery") -> "Battery"
+        lower.contains("connect") -> "Connectivity"
+        lower.contains("clothes") || lower.contains("wardrobe") || lower.contains("outfit") -> "Style"
+        lower.contains("cheaper") || lower.contains("shopping") -> "Shopping"
+        lower.contains("skincare") || lower.contains("products") || lower.contains("care") -> "Care"
+        else -> null
+    }
+    val tokens = lower.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+    fun matches(text: String) = tokens.isNotEmpty() && tokens.all { text.lowercase().contains(it) }
+    val vaultMatches = knowledge.filter { matches(it.title + " " + it.detail + " " + it.entityType) }.take(20)
+    val careMatches = (care as? CareState.Ready)?.items.orEmpty().filter { matches(it.name + " " + it.category) }.take(20)
+    val mediaMatches = rows.filter { matches(it.name) }.take(20)
+    val data = (device as? DeviceState.Ready)?.snapshot
+    val colors = KanoThemeColors
+    LazyColumn(contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 20.dp + footerInset), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.size(48.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.Transparent,
+                        border = BorderStroke(0.75.dp, Color.White.copy(alpha = if (colors.isDark) 0.20f else 0.45f)),
+                        modifier = Modifier.size(28.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = "K",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.kano_logo),
+                            contentDescription = "Kano",
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp))
+                        )
                     }
+                    Text("KANO", style = MaterialTheme.typography.headlineMedium, color = colors.textPrimary)
                 }
+                Text(DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(clock)), style = MaterialTheme.typography.labelLarge, color = colors.textPrimary)
             }
-
-            // Query Input Box (Inspired by Stitch Prototype)
-            item {
-                OutlinedTextField(
-                    value = queryText,
-                    onValueChange = { queryText = it },
-                    placeholder = { Text("Ask Kano or describe a task...") },
-                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                    trailingIcon = {
-                        Row(modifier = Modifier.padding(end = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Icon(Icons.Outlined.CameraAlt, contentDescription = "Scan", modifier = Modifier.size(20.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Icon(Icons.Outlined.Mic, contentDescription = "Voice", modifier = Modifier.size(20.dp))
-                        }
-                    },
-                    shape = RoundedCornerShape(28.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    ),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            // Daily Priority Brief Hero Card (Stitch Board 1)
-            item {
-                KanoGlassCard(cornerRadius = 24.dp) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        StatusChip("DAILY PRIORITY BRIEF", containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
-                        Text("08:12 AM", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-
-                    Spacer(Modifier.height(10.dp))
-
-                    Text(
-                        text = "3 verified updates ready for your review",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                    )
-
-                    Spacer(Modifier.height(4.dp))
-
-                    Text(
-                        text = "Extracted from your private memory feed, local clipboard, and style tracker. Zero data leaves your device.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-
-                    Spacer(Modifier.height(14.dp))
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        KanoHeroButton(
-                            onClick = openVault,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text("Review 3 Items", fontWeight = FontWeight.Bold, color = Color.White)
-                            Spacer(Modifier.width(4.dp))
-                            Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = Color.White)
-                        }
-                        KanoOutlinedButton(
-                            onClick = {},
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text("Dismiss")
-                        }
-                    }
-                }
-            }
-
-            // Real-Time Telemetry Grid (2x2)
-            item {
-                Text(
-                    text = "REAL-TIME TELEMETRY",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(Modifier.height(8.dp))
-
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        TelemetryCard("Device Health", "Healthy", "128 GB free (72% cap)", KanoGreenContainer, Modifier.weight(1f), openDevice)
-                        TelemetryCard("Knowledge Hub", "16 Items", "12 min ago", KanoPeachContainer, Modifier.weight(1f), openVault)
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        TelemetryCard("Media Index", "239 Docs", "18 duplicates", KanoBlueContainer, Modifier.weight(1f), openMedia)
-                        TelemetryCard("Style & Wardrobe", "Daily Fit", "12 items synced", KanoLavenderContainer, Modifier.weight(1f), openStyle)
-                    }
-                }
-            }
-
-            // Urgent & Actionable Cards (Stitch Board 1)
-            item {
-                Text(
-                    text = "Urgent & Actionable",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(Modifier.height(8.dp))
-
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    // Action Item 1
+            Text(DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(clock)), style = MaterialTheme.typography.labelMedium, color = colors.textSecondary)
+        }
+        if (scanning) item { KanoStateSurface("Reading your image", "Local text and QR recognition is running.", true) }
+        item {
+            OutlinedTextField(query, { query = it.take(160) }, modifier = Modifier.fillMaxWidth(), label = { Text("Ask or search on this device") }, singleLine = true, shape = MaterialTheme.shapes.large)
+            Text("Local commands & keyword search · cloud AI unavailable", style = MaterialTheme.typography.labelSmall, color = colors.textTertiary, modifier = Modifier.padding(top = 4.dp))
+        }
+        if (query.isNotBlank()) item {
+            Column(Modifier.kanoMorph(LocalMotionEnabled.current), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                focus?.let { intent ->
                     KanoGlassCard {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            StatusChip("WEBSITE PARSED", containerColor = MaterialTheme.colorScheme.primaryContainer)
-                            Spacer(Modifier.weight(1f))
-                            Text("11m ago", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(intent, style = MaterialTheme.typography.headlineMedium, color = colors.textPrimary)
+                        Text(when (intent) {
+                            "Storage" -> data?.let { Formatter.formatFileSize(context, it.storageAvailable) + " available on the data volume" } ?: "Readings unavailable"
+                            "RAM" -> data?.memoryAvailable?.let { Formatter.formatFileSize(context, it) + " system RAM available" } ?: "Readings unavailable"
+                            "Battery" -> data?.batteryPercent?.let { "$it%" } ?: "Readings unavailable"
+                            "Connectivity" -> data?.connectionType ?: "Readings unavailable"
+                            "Style" -> "Wardrobe recognition is not configured."
+                            "Care" -> (care as? CareState.Ready)?.let { "${it.items.size} user-entered records" } ?: "Inventory unavailable"
+                            "Shopping" -> "No price provider is connected."
+                            else -> "Readings unavailable"
+                        }, style = MaterialTheme.typography.bodyMedium, color = colors.textSecondary)
+                        KanoOutlinedButton(when (intent) { "Style" -> openStyle; "Care" -> openPersonalCare; "Shopping" -> openShopping; else -> openDevice }) { Text(if (intent in setOf("Style", "Care", "Shopping")) "Open $intent" else "Open Device") }
+                    }
+                }
+                vaultMatches.forEach { record -> KanoActionRow(record.title, "Vault · " + record.entityType, openVault) }
+                careMatches.forEach { record -> KanoActionRow(record.name, "Care · " + record.category, openPersonalCare) }
+                mediaMatches.forEach { record -> KanoActionRow(record.name, "Saved document · current index page", openSavedDocuments) }
+                if (focus == null && vaultMatches.isEmpty() && careMatches.isEmpty() && mediaMatches.isEmpty())
+                    KanoStateSurface(if (knowledgeError) "Search source unavailable" else "No local match", "Searches saved Vault and Care records plus the loaded document page. Gallery filenames are searched in Media.")
+            }
+        }
+        item {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                KanoOutlinedButton(openCamera) { Text("Open Kano Vision") }
+                KanoOutlinedButton(openMedia) { Text("Open gallery") }
+                KanoOutlinedButton(openVault) { Text("Open Knowledge Vault") }
+            }
+        }
+        item {
+            Text("Right now", style = MaterialTheme.typography.titleMedium, color = colors.textPrimary)
+            Spacer(Modifier.height(6.dp))
+            KanoCardGroup {
+                KanoGroupItem("View device readings", data?.let { "${it.batteryPercent?.let { percent -> "$percent% battery" } ?: "Battery unavailable"} · " + Formatter.formatFileSize(context, it.storageAvailable) + " available" } ?: "Loading Android readings", openDevice, showDivider = true)
+                KanoGroupItem("Manage Personal Care", (care as? CareState.Ready)?.let { "${it.items.size} records you entered" } ?: "Inventory loading or unavailable", openPersonalCare, showDivider = true)
+                KanoGroupItem("Open Style Studio", "Your wardrobe, with explicit evidence", openStyle, showDivider = false)
+            }
+            Text("No calendar, notifications or email sources are connected. Daily priorities are unavailable.", style = MaterialTheme.typography.bodySmall, color = colors.textTertiary, modifier = Modifier.padding(top = 8.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun SettingsScreen(model: KanoViewModel? = null, initialPage: String = "Overview", footerInset: Dp = 0.dp) {
+    val context = LocalContext.current
+    val owner = LocalLifecycleOwner.current
+    val colors = KanoThemeColors
+    var page by rememberSaveable { mutableStateOf(initialPage) }
+    LaunchedEffect(initialPage) { if (initialPage != "Overview") page = initialPage }
+    val settingsList = remember(page) { LazyListState() }
+    var revision by remember { mutableIntStateOf(0) }
+    var actionError by remember { mutableStateOf<String?>(null) }
+    val mode = model?.themeMode?.collectAsStateWithLifecycle()?.value ?: KanoThemeMode.SYSTEM
+    val visual = model?.visualTheme?.collectAsStateWithLifecycle()?.value ?: KanoVisualTheme.KANO_GLASS
+    val glass = model?.glassMode?.collectAsStateWithLifecycle()?.value ?: KanoGlassMode.ON
+    val reduced = model?.reducedMotion?.collectAsStateWithLifecycle()?.value ?: false
+    val dark = colors.isDark
+    DisposableEffect(owner) {
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) revision++ }
+        owner.lifecycle.addObserver(observer); onDispose { owner.lifecycle.removeObserver(observer) }
+    }
+    BackHandler(page != "Overview") { page = "Overview" }
+    fun granted(permission: String): Boolean { revision; return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED }
+    fun appSettings() {
+        try { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))) }
+        catch (_: Exception) { actionError = "Android app settings unavailable." }
+    }
+    LazyColumn(state = settingsList, contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 20.dp + footerInset), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item {
+            SectionTitle(if (page == "Overview") "Privacy & Settings" else page, if (page == "Overview") "Your appearance. Your access. Your choice." else "")
+            if (page != "Overview") TextButton({ page = "Overview" }) { Text("All settings") }
+        }
+        if (page == "Overview") {
+            item {
+                KanoCardGroup {
+                    val settingsItems = listOf(
+                        "Appearance" to "${visual.label} · ${mode.name.lowercase()}",
+                        "Privacy" to "Data, processing and retention",
+                        "Permissions" to "Camera and Android-controlled media",
+                        "AI providers" to "Local Vision available · cloud unavailable",
+                        "About" to "Version, source and capability scope"
+                    )
+                    settingsItems.forEachIndexed { index, (title, detail) ->
+                        KanoGroupItem(title, detail, { page = title }, showDivider = index < settingsItems.lastIndex)
+                    }
+                }
+            }
+        } else when (page) {
+            "Appearance" -> {
+                item {
+                    Text("Light & dark", style = MaterialTheme.typography.titleLarge, color = colors.textPrimary)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 6.dp)) {
+                        KanoThemeMode.entries.forEach { option ->
+                            KanoOutlinedButton({ model?.setThemeMode(option) }) { Text((if (option == mode) "Selected · " else "") + option.name.lowercase().replaceFirstChar(Char::uppercaseChar)) }
                         }
-                        Spacer(Modifier.height(6.dp))
-                        Text("Dieter Rams Archive & Exhibition", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("https://design-museum.org/retro...", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.height(10.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            KanoOutlinedButton(onClick = openVault, modifier = Modifier.weight(1f)) { Text("View File") }
-                            KanoButton(onClick = openVault, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("Open Link")
+                    }
+                }
+                item { Text("Visual themes", style = MaterialTheme.typography.titleLarge, color = colors.textPrimary) }
+                KanoVisualTheme.entries.chunked(2).forEach { pair ->
+                    item {
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            pair.forEach { choice ->
+                                val choiceColors = visualColors(choice, dark)
+                                val choiceSemantic = visualSemanticColors(choice, dark)
+                                val design = visualDesign(choice, dark)
+                                Surface(onClick = { model?.setVisualTheme(choice) }, modifier = Modifier.weight(1f).semantics { selected = choice == visual },
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(design.radius), color = choiceColors.background,
+                                    border = androidx.compose.foundation.BorderStroke(if (choice == visual) 2.dp else 1.dp, if (choice == visual) choiceColors.primary else choiceColors.outlineVariant)) {
+                                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Canvas(Modifier.fillMaxWidth().height(48.dp)) {
+                                            drawRoundRect(choiceColors.secondaryContainer, size = size, cornerRadius = androidx.compose.ui.geometry.CornerRadius(12f))
+                                            drawCircle(choiceColors.primary, radius = size.height * .22f, center = androidx.compose.ui.geometry.Offset(size.width * .3f, size.height * .5f))
+                                            drawRoundRect(choiceColors.surface, topLeft = androidx.compose.ui.geometry.Offset(size.width * .55f, size.height * .2f), size = androidx.compose.ui.geometry.Size(size.width * .3f, size.height * .6f))
+                                        }
+                                        Text((if (choice == visual) "Selected · " else "") + choice.label, color = choiceSemantic.textPrimary, style = MaterialTheme.typography.labelLarge.copy(fontFamily = design.font))
+                                    }
+                                }
                             }
                         }
                     }
-
-                    // Action Item 2
-                    KanoGlassCard(glassColor = KanoPeachContainer.copy(alpha = 0.88f)) {
+                }
+                item {
+                    KanoGlassCard {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            StatusChip("INVENTORY LOW ALERT", containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer)
-                            Spacer(Modifier.weight(1f))
-                            Text("15%", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                            Text("Glass OFF", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, color = colors.textPrimary)
+                            Switch(glass == KanoGlassMode.OFF, { model?.setGlassMode(if (it) KanoGlassMode.OFF else KanoGlassMode.ON) }, Modifier.semantics { contentDescription = "Glass OFF" })
                         }
-                        Spacer(Modifier.height(6.dp))
-                        Text("Morning Hydrating Mist", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("Approx. 15% (3–4 days left based on daily log)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(10.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            KanoButton(onClick = openPersonalCare, modifier = Modifier.weight(1f)) { Text("Reorder Item") }
-                            KanoOutlinedButton(onClick = openPersonalCare, modifier = Modifier.weight(1f)) { Text("Record Use") }
+                        Text("Use opaque surfaces instead of translucency. Layout, actions and motion stay the same. Ambient blur is limited to supported devices; text and photos remain sharp.", style = MaterialTheme.typography.bodySmall, color = colors.textSecondary)
+                        Spacer(Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Reduce motion", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, color = colors.textPrimary)
+                            Switch(reduced, { model?.setReducedMotion(it) }, Modifier.semantics { contentDescription = "Reduce motion" })
                         }
+                        Text("Typography follows Android's font size. Animations stop when the app is hidden, memory is low or Android animations are disabled.", style = MaterialTheme.typography.bodySmall, color = colors.textSecondary)
                     }
                 }
             }
-
-            // Quick Capture Floating Hero Action
-            item {
-                KanoHeroButton(onClick = openMedia, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Outlined.FlashOn, contentDescription = null, tint = Color.White)
-                    Spacer(Modifier.width(8.dp))
-                    Text("⚡ Quick Capture & Index", fontWeight = FontWeight.Bold, color = Color.White)
+            "Privacy" -> item {
+                KanoGlassCard {
+                    FactRow("Processing", "On this device", "Local text/QR recognition. No Internet permission, telemetry or uploads.")
+                    FactRow("Stored knowledge", "Explicitly reviewed items", "Recognition can be wrong. Sensitive-pattern matches block persistence; this is not a guarantee that all sensitive content is detected.")
+                    FactRow("Storage", "App-private Room database", "Database-level encryption is not implemented. Backups and transfer are disabled.")
+                    FactRow("Credentials", "Keystore adapter", "No live provider credentials or accounts are configured.")
+                    FactRow("Revocation", "Android app settings", "Media is rechecked on resume. Forgetting the document index releases saved read grants; originals are retained.")
+                    KanoOutlinedButton(::appSettings) { Text("Android app settings") }
+                }
+            }
+            "Permissions" -> item {
+                KanoGlassCard {
+                    FactRow("Camera", if (granted(Manifest.permission.CAMERA)) "Granted" else "Not granted", "Requested only from Kano Vision for preview/capture. Captures are reviewed before use.")
+                    FactRow("Media", model?.currentGalleryAccess()?.label ?: "Not inspected", "Full, photos-only, videos-only or selected access. Android controls which assets Kano can read.")
+                    FactRow("Connectivity", "Local metadata only", "ACCESS_NETWORK_STATE reads connection type; INTERNET is removed.")
+                    FactRow("Notifications / Gmail / location / contacts", "Not connected", "No listener, OAuth account, location or contact access is requested.")
+                    KanoOutlinedButton(::appSettings) { Text("Manage Android permissions") }
+                }
+            }
+            "AI providers" -> {
+                item { KanoStateSurface("Local Vision", "Bundled ML Kit Latin text and QR recognition. Review each result before saving. Garment, product and movie identity are unavailable.") }
+                listOf("OpenAI", "Gemini", "Perplexity", "Local language model").forEach { provider ->
+                    item { KanoStateSurface("$provider · Unavailable", "No verified adapter, model or account is connected. API access is not inferred from a subscription.") }
+                }
+            }
+            "About" -> item {
+                KanoGlassCard {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(24.dp),
+                            color = Color.Transparent,
+                            shadowElevation = 4.dp,
+                            border = BorderStroke(0.75.dp, Color.White.copy(alpha = if (colors.isDark) 0.22f else 0.50f)),
+                            modifier = Modifier.size(96.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.kano_logo),
+                                contentDescription = "Kano",
+                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp))
+                            )
+                        }
+                    }
+                    FactRow("Kano", BuildConfig.VERSION_NAME, "Development build · Device, Gallery, local Vision, Vault and manual Care inventory")
+                    FactRow("Source", "Kirayeagami/Kano", "Git-backed native Kotlin and Compose application")
+                    FactRow("Updates", "No update service", "Release dates and available versions are unknown.")
+                    FactRow("Not configured", "Style models, Shopping, Gmail, notifications", "No fabricated recommendations, prices or account data.")
                 }
             }
         }
+        actionError?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
     }
 }
 
 @Composable
-private fun TelemetryCard(
-    title: String,
-    status: String,
-    detail: String,
-    bgColor: Color,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
-        color = bgColor,
-        modifier = modifier.height(105.dp),
-    ) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(title, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color(0xFF111111))
-            Column {
-                Text(status, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFF111111))
-                Text(detail, style = MaterialTheme.typography.labelSmall, color = Color(0xFF333333))
+fun ShoppingScreen(model: KanoViewModel, openCare: () -> Unit, openCamera: () -> Unit, footerInset: Dp = 0.dp) {
+    val state by model.careItems.collectAsStateWithLifecycle()
+    LazyColumn(contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 20.dp + footerInset), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item { SectionTitle("Shopping", "Start with what you already own.") }
+        item { KanoStateSurface("Price research · Unavailable", "No seller or shopping provider is connected. Live prices, ratings, stock and price history cannot be shown.") }
+        item {
+            KanoCardGroup {
+                KanoGroupItem("Review your inventory", (state as? CareState.Ready)?.let { "${it.items.size} products you entered" } ?: "Inventory unavailable", openCare, showDivider = true)
+                KanoGroupItem("Read a product label", "Local OCR & QR · identity requires review", openCamera, showDivider = false)
             }
         }
     }
 }
-
 @Composable
-fun SettingsScreen(model: KanoViewModel? = null) {
-    val currentThemeMode = model?.themeMode?.collectAsStateWithLifecycle()?.value ?: KanoThemeMode.SYSTEM
-
-    LazyColumn(
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item { SectionTitle("Privacy & Appearance", "Access is strictly scoped to what you choose.") }
-
-        // Appearance Theme Selector Card
-        item {
-            KanoGlassCard {
-                Text(
-                    text = "Appearance Theme",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = "Select Bright Mode, Dark Mode, or follow System Default.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 12.dp),
-                )
-
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    KanoThemeMode.entries.forEach { mode ->
-                        KanoOutlinedButton(onClick = { model?.setThemeMode(mode) }, modifier = Modifier.fillMaxWidth()) {
-                            Text((if (mode == currentThemeMode) "Selected · " else "") + mode.name.lowercase().replaceFirstChar { it.uppercase() })
-                        }
-                    }
-                }
-                val glass = model?.glass?.collectAsStateWithLifecycle()?.value ?: true
-                val reducedMotion = model?.reducedMotion?.collectAsStateWithLifecycle()?.value ?: false
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Glass surfaces", modifier = Modifier.weight(1f))
-                    Switch(checked = glass, onCheckedChange = { model?.setGlass(it) },
-                        modifier = Modifier.semantics { contentDescription = "Glass surfaces" })
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Reduce motion", modifier = Modifier.weight(1f))
-                    Switch(checked = reducedMotion, onCheckedChange = { model?.setReducedMotion(it) },
-                        modifier = Modifier.semantics { contentDescription = "Reduce motion" })
-                }
-                Text("Glass changes surface transparency. Reduce motion stops ambient waves. Android's disabled animations are also respected.", style = MaterialTheme.typography.bodySmall)
-            }
-        }
-
-        item {
-            KanoGlassCard {
-                FactRow("Cloud AI", "Off · Not Integrated", "OpenAI, Gemini, Perplexity and local inference are planned. No API key is requested in this build.")
-                FactRow("Media Access", "Selected Documents Only", "Use Media → Forget selected media index to remove saved metadata and release read grants.")
-                FactRow("Storage", "On This Device", "App-private metadata database. No additional database encryption. Backup and transfer are excluded; uninstalling removes the index.")
-                FactRow("Other Access", "Not Requested", "No notification listener, Gmail, contacts, location, broad storage, usage access or accessibility service.")
-            }
-        }
-
-        item {
-            KanoGlassCard(glassColor = KanoPeachContainer.copy(alpha = 0.85f)) {
-                Text("Version & Release Roadmap", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-                FactRow("Installed Version", BuildConfig.VERSION_NAME, "No update service is connected. Available version and release date are unknown.")
-                FactRow("1.0 · Complete", "Device + Media + Vault", "Indexing → OCR / QR / URLs → Knowledge Vault → safe cleanup.")
-                FactRow("1.1 · Planned", "Gmail + Notifications")
-                FactRow("1.2–1.4 · Planned", "Style, Shopping, Research", "1.2 Style Lab · 1.3 Shopping intelligence · 1.4 Perplexity research")
-                FactRow("2.0–3.0 · Planned", "Knowledge Graph & Local AI", "2.0 Knowledge graph · 2.1 Android capabilities · 3.0 Local AI improvements")
-            }
-        }
+fun DailyLifeScreen(footerInset: Dp = 0.dp) {
+    LazyColumn(contentPadding = PaddingValues(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 20.dp + footerInset), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item { SectionTitle("Daily Life", "What matters today, with evidence.") }
+        item { KanoStateSurface("No daily sources connected", "Calendar, tasks, email and notification sources are not connected. Kano cannot create an evidence-backed daily brief yet.") }
     }
 }

@@ -2,147 +2,122 @@ package app.kano.platform
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.net.Uri
-import app.kano.core.PrivacyFirewall
-import app.kano.data.Confidence
+import androidx.exifinterface.media.ExifInterface
+import app.kano.core.VisionPolicy
 import app.kano.data.ExtractionType
-import app.kano.data.KnowledgeRepository
 import app.kano.data.KnowledgeType
-import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import java.util.regex.Pattern
+import java.io.ByteArrayOutputStream
+import java.util.concurrent.Executor
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
+data class VisionCandidate(val title: String, val detail: String, val type: KnowledgeType,
+    val extraction: ExtractionType, val url: String? = null)
 data class MediaIntelligenceResult(
+    val sourceUri: String,
+    val digest: String,
     val extractedText: String?,
     val qrPayload: String?,
-    val recognizedEntities: Int,
+    val candidates: List<VisionCandidate>,
     val isSensitiveRedacted: Boolean,
-)
+    val issues: List<String>,
+) { val recognizedEntities: Int get() = candidates.size }
 
-class MediaIntelligenceProcessor(
-    private val context: Context,
-    private val knowledgeRepository: KnowledgeRepository,
-) {
+/** One bounded local engine for gallery, camera, Style and Care. Results require explicit review. */
+class MediaIntelligenceProcessor(context: Context) {
     private val resolver = context.contentResolver
-    private val urlPattern = Pattern.compile("(https?://[\\w\\.-]+\\.[a-zA-Z]{2,6}[/\\w\\.-]*)", Pattern.CASE_INSENSITIVE)
 
     suspend fun processImageUri(uri: Uri): MediaIntelligenceResult = withContext(Dispatchers.IO) {
-        val bitmap = resolver.openInputStream(uri)?.use { stream ->
-            BitmapFactory.decodeStream(stream)
-        } ?: return@withContext MediaIntelligenceResult(null, null, 0, false)
-
-        val image = InputImage.fromBitmap(bitmap, 0)
-        var entitiesFound = 0
-        var isSensitive = false
-
-        // 1. On-Device Local QR Code Detection
-        val barcodeScanner = BarcodeScanning.getClient()
-        var qrResultPayload: String? = null
-        try {
-            val barcodes = Tasks.await(barcodeScanner.process(image))
-            for (barcode in barcodes) {
-                val rawValue = barcode.rawValue
-                if (!rawValue.isNullOrBlank()) {
-                    qrResultPayload = rawValue
-                    knowledgeRepository.save(
-                        title = "QR Payload Detected",
-                        detail = rawValue.take(200),
-                        entityType = KnowledgeType.QR_PAYLOAD,
-                        sourceUri = uri.toString(),
-                        extractionType = ExtractionType.QR_CODE,
-                        confidence = Confidence.CONFIRMED,
-                        urlOrPayload = rawValue,
-                    )
-                    entitiesFound++
-                }
+        require(uri.scheme == "content")
+        val bytes = resolver.openInputStream(uri)?.use { input ->
+            val output = ByteArrayOutputStream()
+            val buffer = ByteArray(16 * 1024)
+            while (true) {
+                currentCoroutineContext().ensureActive()
+                val count = input.read(buffer)
+                if (count < 0) break
+                require(output.size() + count <= MAX_ENCODED_BYTES) { "Image exceeds the scan byte limit" }
+                output.write(buffer, 0, count)
             }
-        } catch (_: Exception) {
-            // QR scanning failed gracefully; continue to OCR
+            output.toByteArray()
+        } ?: error("Image unavailable")
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        require(bounds.outWidth > 0 && bounds.outHeight > 0) { "Unsupported image" }
+        var sample = 1
+        while (bounds.outWidth / sample > MAX_DIMENSION || bounds.outHeight / sample > MAX_DIMENSION) sample *= 2
+        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
+            ?: error("Image unavailable")
+        val exif = runCatching { ExifInterface(bytes.inputStream()) }.getOrNull()
+        val matrix = Matrix().apply {
+            postRotate((exif?.rotationDegrees ?: 0).toFloat())
+            if (exif?.isFlipped == true) postScale(-1f, 1f)
         }
-
-        // 2. On-Device Local OCR Text Recognition
-        val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-        var extractedRawText: String? = null
+        val oriented = if (matrix.isIdentity) bitmap else Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        val image = InputImage.fromBitmap(oriented, 0)
+        val qr = BarcodeScanning.getClient()
+        val ocr = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        val issues = mutableListOf<String>()
+        var text: String? = null
+        var payload: String? = null
+        var sensitiveQr = false
+        val candidates = mutableListOf<VisionCandidate>()
         try {
-            val visionText = Tasks.await(textRecognizer.process(image))
-            val fullText = visionText.text
-            if (fullText.isNotBlank()) {
-                // Secret redaction for sensitive patterns (passwords, tokens, credit cards)
-                val isSensitiveMatch = fullText.contains(Regex("(?i)\\b(password|passwd|otp|api[_ -]?key|sk-[A-Za-z0-9_-]{12,})\\b"))
-                isSensitive = isSensitiveMatch
-                val safeText = if (isSensitive) fullText.replace(Regex("(?i)\\b(password|passwd|otp|api[_ -]?key|sk-[A-Za-z0-9_-]{12,})\\b"), "[REDACTED]") else fullText
-                extractedRawText = safeText
-
-                // Extract Candidate URLs from OCR Text
-                val matcher = urlPattern.matcher(safeText)
-                while (matcher.find()) {
-                    val candidateUrl = matcher.group(1)
-                    if (!candidateUrl.isNullOrBlank()) {
-                        knowledgeRepository.save(
-                            title = "Extracted Website Link",
-                            detail = "URL detected via OCR text scan",
-                            entityType = KnowledgeType.WEBSITE,
-                            sourceUri = uri.toString(),
-                            extractionType = ExtractionType.OCR,
-                            confidence = Confidence.LIKELY,
-                            urlOrPayload = candidateUrl,
-                        )
-                        entitiesFound++
+            try {
+                val results = qr.process(image).awaitLocal()
+                for (barcode in results.take(20)) {
+                    val value = barcode.rawValue?.take(8_000) ?: continue
+                    payload = value
+                    sensitiveQr = sensitiveQr || VisionPolicy.hasSensitiveSignal(value)
+                    VisionPolicy.publicWebUrl(value)?.let { url ->
+                        candidates += VisionCandidate("Website from QR", "Decoded web address; identity has not been verified.",
+                            KnowledgeType.WEBSITE, ExtractionType.QR_CODE, url)
                     }
                 }
-
-                // Entity Keyword Classification (Study Note, Movie, Book, Product, Receipt)
-                val lowerText = safeText.lowercase()
-                when {
-                    lowerText.contains("chapter") || lowerText.contains("lecture") || lowerText.contains("exam") || lowerText.contains("notes") -> {
-                        knowledgeRepository.save(
-                            title = "Study Note Content",
-                            detail = safeText.take(150),
-                            entityType = KnowledgeType.STUDY_NOTE,
-                            sourceUri = uri.toString(),
-                            extractionType = ExtractionType.OCR,
-                            confidence = Confidence.LIKELY,
-                        )
-                        entitiesFound++
-                    }
-                    lowerText.contains("movie") || lowerText.contains("imdb") || lowerText.contains("cinema") || lowerText.contains("directed by") -> {
-                        knowledgeRepository.save(
-                            title = "Movie Title Candidate",
-                            detail = safeText.take(150),
-                            entityType = KnowledgeType.MOVIE,
-                            sourceUri = uri.toString(),
-                            extractionType = ExtractionType.OCR,
-                            confidence = Confidence.LIKELY,
-                        )
-                        entitiesFound++
-                    }
-                    lowerText.contains("total") && (lowerText.contains("receipt") || lowerText.contains("tax") || lowerText.contains("invoice")) -> {
-                        knowledgeRepository.save(
-                            title = "Receipt / Invoice Document",
-                            detail = safeText.take(150),
-                            entityType = KnowledgeType.RECEIPT,
-                            sourceUri = uri.toString(),
-                            extractionType = ExtractionType.OCR,
-                            confidence = Confidence.LIKELY,
-                        )
-                        entitiesFound++
-                    }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { issues += "QR recognition failed" }
+            try { text = ocr.process(image).awaitLocal().text.take(8_000).takeIf { it.isNotBlank() } }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { issues += "Text recognition failed" }
+            currentCoroutineContext().ensureActive()
+            val sensitive = VisionPolicy.hasSensitiveSignal(text.orEmpty()) || sensitiveQr
+            if (!sensitive) {
+                VisionPolicy.webUrls(text.orEmpty()).forEach { url ->
+                    candidates += VisionCandidate("Website from text", "OCR web address candidate; check for recognition errors.",
+                        KnowledgeType.WEBSITE, ExtractionType.OCR, url)
                 }
-            }
-        } catch (_: Exception) {
-            // OCR recognition failed gracefully
+                if (!text.isNullOrBlank()) candidates += VisionCandidate("Text excerpt", text!!.take(300),
+                    KnowledgeType.UNKNOWN, ExtractionType.OCR)
+            } else candidates.clear()
+            // Store a digest of the exact decoded input, not private content in diagnostics.
+            val digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+            MediaIntelligenceResult(uri.toString(), digest, if (sensitive) null else text,
+                if (sensitive) null else payload, candidates.distinctBy { it.url ?: it.detail }, sensitive, issues)
+        } finally {
+            qr.close(); ocr.close()
+            // No bitmap cache retains originals. Native tasks may still reference input after cancellation.
         }
-
-        MediaIntelligenceResult(
-            extractedText = extractedRawText,
-            qrPayload = qrResultPayload,
-            recognizedEntities = entitiesFound,
-            isSensitiveRedacted = isSensitive,
-        )
     }
+
+    private suspend fun <T> Task<T>.awaitLocal(): T = suspendCancellableCoroutine { continuation ->
+        val direct = Executor { it.run() }
+        addOnSuccessListener(direct) { if (continuation.isActive) continuation.resume(it) }
+        addOnFailureListener(direct) { if (continuation.isActive) continuation.resumeWithException(it) }
+        addOnCanceledListener(direct) { continuation.cancel() }
+    }
+    companion object { const val MAX_ENCODED_BYTES = 20 * 1024 * 1024; const val MAX_DIMENSION = 1600 }
 }

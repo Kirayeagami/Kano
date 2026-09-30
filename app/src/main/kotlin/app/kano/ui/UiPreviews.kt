@@ -1,120 +1,28 @@
 package app.kano.ui
-
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-import app.kano.platform.DeviceSnapshot
-
-// --- Home Screen Previews ---
-@Preview(name = "Home Screen - Light", showBackground = true, widthDp = 375)
-@Composable
-fun HomeScreenPreviewLight() {
-    KanoTheme(themeMode = KanoThemeMode.LIGHT) {
-        HomeScreen(openDevice = {}, openMedia = {}, openStyle = {}, openPersonalCare = {})
-    }
+import androidx.compose.ui.tooling.preview.*
+class KanoThemesPreview : PreviewParameterProvider<KanoVisualTheme> {
+    override val values = KanoVisualTheme.entries.asSequence()
 }
-
-@Preview(name = "Home Screen - Dark", showBackground = true, widthDp = 375)
+@Preview(name = "Native Home • Light", showBackground = true, widthDp = 360)
 @Composable
-fun HomeScreenPreviewDark() {
-    KanoTheme(themeMode = KanoThemeMode.DARK) {
-        HomeScreen(openDevice = {}, openMedia = {}, openStyle = {}, openPersonalCare = {})
-    }
+fun HomeLight(@PreviewParameter(KanoThemesPreview::class) theme: KanoVisualTheme) {
+    KanoTheme(KanoThemeMode.LIGHT, theme) { HomeScreen({}, {}, {}, {}) }
 }
-
-// --- Device Screen Previews ---
-private val sampleDeviceSnapshot = DeviceSnapshot(
-    manufacturer = "Google",
-    model = "Pixel 8 Pro (Emulator)",
-    brand = "Google",
-    androidVersion = "15",
-    sdkInt = 35,
-    securityPatch = "2026-09-01",
-    buildId = "AP31.240901.001",
-    cpuAbi = "arm64-v8a",
-    cpuCores = 8,
-    storageTotal = 128L * 1024 * 1024 * 1024,
-    storageAvailable = 36L * 1024 * 1024 * 1024,
-    memoryTotal = 8L * 1024 * 1024 * 1024,
-    memoryAvailable = 4L * 1024 * 1024 * 1024,
-    memoryLow = false,
-    batteryPercent = 78,
-    charging = true,
-    batteryTemperatureC = 31.2,
-    batteryVoltageMv = 4120,
-    connectionType = "Wi-Fi Connected",
-    bluetoothEnabled = true,
-    capturedAt = System.currentTimeMillis(),
-)
-
-@Preview(name = "Device Screen - Light", showBackground = true, widthDp = 375)
+@Preview(name = "Native Home • Dark", showBackground = true, widthDp = 360)
 @Composable
-fun DeviceScreenPreviewLight() {
-    KanoTheme(themeMode = KanoThemeMode.LIGHT) {
-        DeviceScreen(
-            state = DeviceState.Ready(sampleDeviceSnapshot),
-            refresh = {},
-        )
-    }
+fun HomeDark(@PreviewParameter(KanoThemesPreview::class) theme: KanoVisualTheme) {
+    KanoTheme(KanoThemeMode.DARK, theme) { HomeScreen({}, {}, {}, {}) }
 }
-
-@Preview(name = "Device Screen - Dark", showBackground = true, widthDp = 375)
+@Preview(name = "Native Device • loading", showBackground = true, widthDp = 360)
 @Composable
-fun DeviceScreenPreviewDark() {
-    KanoTheme(themeMode = KanoThemeMode.DARK) {
-        DeviceScreen(
-            state = DeviceState.Ready(sampleDeviceSnapshot),
-            refresh = {},
-        )
-    }
-}
-
-// --- Style Studio Previews ---
-@Preview(name = "Style Studio - Light", showBackground = true, widthDp = 375)
+fun DevicePreview() { KanoTheme { DeviceScreen(DeviceState.Loading, {}) } }
+@Preview(name = "Native Care • 200% text", showBackground = true, widthDp = 360, fontScale = 2f)
 @Composable
-fun StyleScreenPreviewLight() {
-    KanoTheme(themeMode = KanoThemeMode.LIGHT) {
-        StyleScreen()
-    }
-}
-
-@Preview(name = "Style Studio - Dark", showBackground = true, widthDp = 375)
+fun CarePreview() { KanoTheme { PersonalCareScreen() } }
+@Preview(name = "Native Style", showBackground = true, widthDp = 360)
 @Composable
-fun StyleScreenPreviewDark() {
-    KanoTheme(themeMode = KanoThemeMode.DARK) {
-        StyleScreen()
-    }
-}
-
-// --- Personal Care Previews ---
-@Preview(name = "Personal Care - Light", showBackground = true, widthDp = 375)
+fun StylePreview() { KanoTheme { StyleScreen() } }
+@Preview(name = "Native Settings", showBackground = true, widthDp = 360)
 @Composable
-fun PersonalCareScreenPreviewLight() {
-    KanoTheme(themeMode = KanoThemeMode.LIGHT) {
-        PersonalCareScreen()
-    }
-}
-
-@Preview(name = "Personal Care - Dark", showBackground = true, widthDp = 375)
-@Composable
-fun PersonalCareScreenPreviewDark() {
-    KanoTheme(themeMode = KanoThemeMode.DARK) {
-        PersonalCareScreen()
-    }
-}
-
-// --- Settings Previews ---
-@Preview(name = "Settings - Light", showBackground = true, widthDp = 375)
-@Composable
-fun SettingsScreenPreviewLight() {
-    KanoTheme(themeMode = KanoThemeMode.LIGHT) {
-        SettingsScreen()
-    }
-}
-
-@Preview(name = "Settings - Dark", showBackground = true, widthDp = 375)
-@Composable
-fun SettingsScreenPreviewDark() {
-    KanoTheme(themeMode = KanoThemeMode.DARK) {
-        SettingsScreen()
-    }
-}
+fun SettingsPreview() { KanoTheme { SettingsScreen() } }

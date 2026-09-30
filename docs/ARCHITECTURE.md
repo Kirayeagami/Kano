@@ -1,87 +1,56 @@
-# KANO architecture
+# Architecture
 
-## Recovery — 2026-09-29
-Existing project recovered at 7774400 (origin/main verified). The seven supplied mobile
-references replace earlier visual guidance. See KANO_STATE.md for source-verified audit.
+Native Kotlin, Compose, Navigation Compose, Room 3 and WorkManager; Android-free :core
+policy/contracts + :app data/platform/presentation. Compile/target35, min26. Existing
+schemas 1,2,3 and 1→2→3 migrations are preserved. No destructive database fallback.
 
-## Implementation decision
-Kotlin + Compose + Navigation Compose + Room + WorkManager; minimum API 26, initial
-compile/target API 35. These are pinned, known-compatible baseline versions, not a claim
-to use the newest releases. Re-evaluate target API and store requirements before release.
-Version 0.1.0-dev is a foundation checkpoint, not Kano 1.0.
+MainActivity owns lifecycle, themes, compact navigation and centralized backgrounds.
+KanoViewModel adapts repository/platform state, foreground device sampling, gallery
+pagination, reviewed Vision saving and confirmed local inventory operations.
 
-Two actual modules initially: `core` for Android-free policies and provider contracts;
-`app` for composition, UI, Room, and platform adapters. Device/media feature packages
-grow into modules when they need independent ownership. No empty Life modules.
+GalleryRepository queries MediaStore in bounded 60-item pages. CancellationSignal
+cancels supporting providers; every page completion rechecks access. An 8MiB thumbnail
+cache with three concurrent decoders invalidates generations on changes/revocation.
+Original image decoding is excluded from the cache. Local OCR has a 20MiB encoded limit
+and 1600px sampled dimensions with EXIF orientation.
 
-```mermaid
-flowchart TD
-  UI[Compose feature screens] --> VM[Lifecycle ViewModel]
-  VM --> Repo[Repositories / platform adapters]
-  Repo --> Room[(Private Room database)]
-  VM --> Jobs[Unique WorkManager index job]
-  Jobs --> Grants[Persisted URI grants]
-  Jobs --> Room
-  AI[AI Router] --> Policy[Privacy Firewall]
-  Policy --> Providers[Explicitly selected cloud provider]
-  AI --> Local[Local capability provider]
-```
+MediaIntelligenceProcessor is one bundled ML Kit OCR/QR engine shared by gallery,
+CameraX, Style and Care. It returns review candidates, source URI and exact-input digest;
+it never automatically saves. A chosen candidate triggers a fresh source scan, digest
+comparison and conservative persistence checks before idempotent Room storage.
+KnowledgeRepository permits at most1000 records and blocks sensitive-pattern text and
+unsafe web URLs. Legacy sensitive records remain in the database but are hidden in UI.
 
-AI is an optional dependency of feature use cases, not a mandatory hop for device metrics.
-All external providers eventually share a reviewed egress boundary. No cloud provider,
-HTTP client, API credential, or Internet permission is installed now. Core provider interfaces
-support reason, image, summary, classify, research, extract; current request policy is
-text-only. Image requests need a separate inspected payload type before implementation.
-Provider-specific implementations must not be exposed directly to UI or workers.
+CameraX binds preview/capture to the actual lifecycle owner. A capture stays private
+until explicit Use; Android29+ then publishes to Pictures/Kano through IS_PENDING.
+Retake/discard remove only the pending private capture. Older Android retains it private.
 
-## Data and jobs
-Media rows are keyed by URI and retain display name, type, size, source timestamp,
-index state, indexed timestamp, optional SHA-256, and a non-sensitive error code.
-Initial metadata classification remains UNKNOWN; filename is not semantic evidence.
-The database stores metadata only. File contents are streamed for hashing, never copied.
-Initial workload is capped at 100 selected documents; 100 MiB per hash. Large/unknown-size
-documents retain metadata and an explicit hash-skipped state. Results are paged in UI.
-Each refresh rechecks permission. Revoked rows have identifying metadata cleared; users
-can forget the index and release only Kano's document grants. Original files are untouched.
+The SAF document index remains an optional bounded WorkManager utility. Hash equality
+does not authorize deletion; forgetRecord removes an index row and grant only.
 
-Room schema versions 1 and 2 are exported. Migration 1 → 2 adds care_items without
-modifying media. Migration and reopen tests verify preservation. Never use destructive fallback. Metadata rests in the Android app sandbox protected by device storage encryption;
-there is no additional database encryption. Backup and device transfer are disabled.
-Credentials and sensitive knowledge records are not accepted in this slice.
+DeviceReader samples public Android metrics every 3 seconds in the foreground. It
+gathers 100% genuine OS telemetry across 10 subsystems: Identity (Build/Version/Fingerprint),
+Performance (SoC model, /proc/cpuinfo architecture, cores, ABIs, OpenGL ES), Memory
+(ActivityManager MemoryInfo, used/available, low-memory pressure and thresholds),
+Storage (StatFs data partition, Kano app-private breakdown across files, cache, code cache,
+and SQLite database), Battery (BatteryManager charging status, plug type, health, temperature,
+voltage, live current draw, average current, charge counter, gauge capacity), Thermal
+(PowerManager thermal status and 30s headroom forecast), Connectivity (NetworkCapabilities
+Wi-Fi/Cellular transports, unmetered status, upstream/downstream bandwidth, airplane mode),
+Peripherals (Display resolution, density, physical diagonal, refresh rate, HDR, Wide Color P3;
+CameraManager lens counts, hardware levels, flash; Audio output/input routes; Vibrator
+haptic amplitude control; NfcAdapter; Location master switch), Sensors (SensorManager TYPE_ALL
+inventory and power draw), and Subsystem Health & Diagnostics. Kano strictly prohibits
+fabricated scores: Benchmark / Health scores are explicitly marked 'Unavailable'.
+Memory maintenance only clears Kano thumbnail-cache references and reports real samples.
+onTrimMemory also clears this cache; no force-stop of other apps or forced GC.
 
-WorkManager keeps durable unique work. An interrupted RUNNING row is reprocessed on
-the next run. UI can refresh/retry, cancel indexing, and forget all indexed metadata.
-No periodic scans; user initiates each job. No network constraint is needed for local work.
-Battery-not-low and storage-not-low constraints apply; stopped jobs remain resumable.
+KeystoreCredentialStore and request-bound PrivacyFirewall/AiRouter contracts are
+preserved. No provider is installed; INTERNET is removed by manifest merger. Normal
+ACCESS_NETWORK_STATE supports local connection type without network requests.
 
-## Privacy and extension boundaries
-Unknown and sensitive content is blocked for cloud use. Secret heuristics are conservative
-signals, not complete DLP. Public text still needs payload/provider/purpose/capability-bound,
-unexpired consent. No cloud consent UI is exposed until a provider is reviewed. Local code
-is trusted code; provider metadata alone is not a sandbox. Media deletion is not implemented.
-CleanupPolicy is only a prerequisite checker; a future executor must verify durable extraction,
-re-read the file fingerprint, expire/consume confirmations, and invoke Android's delete flow.
-
-Release catalog is bundled/read-only; no fabricated available update or download action.
-Remote config is deferred and must never broaden access or override consent. Future
-providers require versioned contracts, runtime availability reasons, migrations, revocation,
-retention controls, response validation, timeout/cancellation, and contract tests.
-
-## Official implementation references
-- Credential storage: Android Keystore AES-256-GCM with provider/version-bound AAD,
-  random IVs, bounded versioned records, atomic private no-backup writes and typed failures.
-  Missing keys fail closed without silent replacement. Caller clears returned plaintext buffers.
-  No biometric requirement or hardware-backed guarantee; no live credential entry yet.
-- [Android Keystore](https://developer.android.com/privacy-and-security/keystore)
-- [AGP 8.9 compatibility](https://developer.android.com/build/releases/agp-8-9-0-release-notes)
-- [Storage Access Framework and persisted grants](https://developer.android.com/training/data-storage/shared/documents-files)
-- [Photo picker](https://developer.android.com/training/data-storage/shared/photo-picker)
-- [Shared media and deletion requests](https://developer.android.com/training/data-storage/shared/media)
-- [Compose compiler plugin](https://kotlinlang.org/docs/whatsnew20.html)
-
-## Manual Care inventory
-CareRepository validates bounded user inputs and uses a transaction for the 200-item cap.
-Updates fail if a record disappeared; deletion is idempotent. Flow state distinguishes
-loading, failure and actual rows. Editors retain drafts across activity recreation with
-rememberSaveable and close only after persistence succeeds. Sensitive medical records are not supported.
-Migration reference: https://developer.android.com/training/data-storage/room/migrating-db-versions
+VisualSystem/Theme/MotionComponents/ScreenComponents define one native design system.
+Eight styles, theme modes, glass modes and reduced motion persist through ThemeManager.
+Public Android reference: https://developer.android.com/training/data-storage/shared/media
+Partial-access reference: https://developer.android.com/about/versions/14/changes/partial-photo-video-access
+Camera compatibility: https://developer.android.com/jetpack/androidx/releases/camera

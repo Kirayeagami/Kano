@@ -50,11 +50,11 @@ class MediaIntelligenceTest {
     }
 
     @Test
-    fun extractBeforeDeleteHandlesRevokedOrUnaccessibleUri() = runBlocking {
+    fun forgetRecordHandlesRevokedOrUnaccessibleUri() = runBlocking {
         val record = MediaRecord(uri = "content://media/external/images/media/999", name = "Revoked.jpg", state = "INDEXED", sha256 = "some_hash")
         db.media().add(record)
 
-        val result = repository.extractBeforeDelete(record)
+        val result = repository.forgetRecord(record)
         // Since URI permission is not persistable on synthetic content URI, returns false and marks ACCESS_REVOKED
         assertFalse(result)
 

@@ -1,40 +1,43 @@
-# KANO UI 2.0 System Architecture
+# Kano native UI system
 
----
+One Compose system for all existing routes: Home/command search, Device and eight
+subpages, Gallery/photo-video sheets/document index, Camera/review/Vision, Vault,
+Style/Dress Me/Wardrobe, Care/editor, Shopping, Daily Life and Settings subpages.
+Working data, Room, credentials and policies are preserved. Unimplemented features
+have factual unavailable states; reference-image example values are not seeded.
 
-## 1. Design Language & Visual Principles
+## Appearance
 
-The Kano UI 2.0 system is designed around the visual language extracted from mobile product design reference images:
-- **Clean Off-White Canvas**: Bright Mode uses a warm off-white background (`#F8F6F2`) with pure white elevated surface cards (`#FFFFFF`).
-- **Nothing-Style Dark Mode**: Dark Mode uses a pure black canvas (`#000000`), deep charcoal card surfaces (`#161616`), warm-white display typography (`#FFFFFF`), and clean 1dp borders (`#2A2A2A`).
-- **Oversized Display Typography**: Bold section titles and giant display metrics (e.g. `72%` storage used, `3 Things Need Attention`).
-- **Generous Rounded Corner Radii**: Hero cards, search inputs, and visual blocks feature 20dp – 28dp rounded corner shapes (`RoundedCornerShape(24.dp)`).
-- **Vibrant Accent Palette**: Primary accent is Coral/Orange (`#FF3B1D` / `#E84A27`) paired with pastel container tints (Peach `#FFEAE5`, Soft Blue `#E8F2FF`, Mint Green `#E8F8F0`, Soft Lavender `#F0ECF9`).
-- **Floating Bottom Navigation Bar**: Floating navigation surface (`RoundedCornerShape(28.dp)`) elevated above the canvas with active tab pill indicator and Material 3 vector icons.
+Eight persisted styles: Kano Glass, Soft Editorial, Minimal Mono, Warm Studio, Aurora,
+Paper, Midnight, Technical. Each has distinct light/dark palettes, radius and typography.
+Light/Dark/System mode follows user choice. Existing theme and glass preferences migrate.
+Latest user brief supersedes earlier glass modes: the only visible control is Glass OFF.
+Normal appearance uses translucent surfaces; OFF uses opaque surfaces with the same
+layout/actions. AUTO is accepted only internally as an old persisted preference and
+normalized to normal glass-enabled appearance. There is no Auto/On selector in the UI.
 
----
+Glass surfaces use actual alpha, borders/shadows and subtle ambient gradients. Supported
+Android RenderEffect blurs only the ambient layer, never text/images; this is not a
+claim of background-pixel sampling/refraction. The footer has a slow reflection plus a
+small animated active pill. Expensive effects pause/reduce offscreen, under low memory,
+with Reduce Motion or disabled Android animators. OFF retains ordinary UI animations.
 
-## 2. Component Inventory
+## Navigation and interaction
 
-| Component | Class | Description |
-| --- | --- | --- |
-| **Glass Card** | `KanoGlassCard` | Translucent glassmorphism container surface with 24.dp rounded corners, soft shadow, and low-opacity border. |
-| **Elevated Card** | `KanoCard` | Pure surface card with 24.dp rounded corners and 1.dp outline border. |
-| **Hero Button** | `KanoHeroButton` | Full-width linear gradient button (`#FF5A36` $\rightarrow$ `#E82E0E`) with 20.dp rounded corners. |
-| **Button** | `KanoButton` | Standard primary CTA button with 18.dp rounded corners. |
-| **Outlined Button** | `KanoOutlinedButton` | Secondary outlined button with 18.dp rounded corners and subtle border. |
-| **Status Chip** | `StatusChip` | Pill badge container with bold uppercase label. |
-| **Wave Background** | `KanoWaveBackground` | Ambient, slow organic background wave drawn on canvas layer behind content. |
-| **Gradient Hero** | `KanoGradientHero` | Translucent gradient hero block. |
+The floating 56dp footer has Home, Device, Media, Vault, Style and Care: six accessible
+48dp actions, constrained width, gesture/3-button insets and reserved content space.
+The top hamburger opens a fully expanded scrollable sheet for Settings, Appearance,
+Privacy, Permissions, providers, Diagnostics, Shopping, Daily Life and About. Secondary
+settings retain a back/overview path. Camera hides normal navigation during capture.
 
----
+Screen fade/slide transitions, native sheet motion, spring press feedback, subtle icon
+selection, search morphing, actual image reveal, real-operation recognition motion and
+slow contextual waves share motion tokens. Idle Home has no orb/fake AI status. Loading
+has no synthetic percentages. Android text sizes and scrollable/adaptive layouts apply.
+Device/Settings details reset scroll per page. Gallery grid headers, stats, error and
+paging groups use Columns so Compose does not overlap multiple children in one grid item.
+Camera review/overlay scroll when large fonts or landscape reduce available space.
 
-## 3. Screen Visual Identity Matrix
-
-- **Home**: Command center layout with user greeting, rounded search box, hero brief card, intelligence services grid (Device, Media, Vault, Style, Care), and real-time active status.
-- **Device**: Technical analytics dashboard with giant `72%` storage percentage, progress meter, memory snapshot card, battery charging badge, and device specs.
-- **Media**: Image-first document list with AI Found category chips, search bar, status badges, and Local OCR & QR scan action buttons.
-- **Vault**: Knowledge Vault screen with category filter chips (`ALL`, `WEBSITES`, `STUDY`, `MOVIES`, `RECEIPTS`, `QR`), search, provenance links, and entity management.
-- **Style Studio**: Outfit scanner camera viewport (220dp container with warm gradient background and camera framing box), today's outfit recommendation, style criteria matrix, and wardrobe catalog.
-- **Personal Care**: Product scanner actions, anti-overspending smart check card, and Room DB backed product inventory list.
-- **Privacy & Settings**: Interactive theme switcher (`System Default`, `Light`, `Dark`), Glass Mode toggle, Reduced Motion toggle, and scoped permission disclosures.
+Native previews are in UiPreviews.kt; real runtime screenshots and limits are documented
+in TEST_STATUS.md. Android Studio launch is distinct from a verified IDE preview/sync.
+No unavailable Stitch MCP or authenticated design export is claimed.

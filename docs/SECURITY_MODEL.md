@@ -1,15 +1,21 @@
-# Security model
+# Security and access
 
-No INTERNET permission, broad storage permission, notification listener or accessibility
-service. The selected-document picker supplies only user-granted URI access.
-Backup/transfer exclusions remain; they are not a promise against every device threat.
+INTERNET, all-files access, blanket package visibility and legacy write-storage
+permission are absent. ACCESS_NETWORK_STATE reads local connectivity metadata.
+Camera and appropriate photo/video/selected-media access are requested explicitly;
+legacy READ_EXTERNAL_STORAGE is capped at API32. No notification listener,
+accessibility service, account scraping, OAuth tokens or cloud credentials are used.
 
-Room metadata and manual Care inventory use the app-private database directory.
-They are NOT stored in noBackupFilesDir and are NOT separately database-encrypted.
-Credential ciphertext alone uses noBackupFilesDir; encryption keys remain in Android
-Keystore. AES-GCM authenticates the provider slot/version, with bounded atomic records,
-random IVs and typed failures. Hardware backing depends on the device; no guarantee.
+Room data remains app private, without additional database encryption. Backups and
+transfer are disabled. Credential ciphertext uses bounded atomic no-backup records and
+Android Keystore AES-GCM with slot/version-bound AAD; hardware backing is not guaranteed.
 
-Text firewall heuristics reject unknown/sensitive data and require bound consent for
-cloud use. They are not complete DLP. No live provider exists and no private content is
-sent in this build. No OAuth tokens or personal credentials were accessed during recovery.
+Shared Vision blocks conservative sensitive signals, including credentials in QR,
+text excerpts and URL query/fragment/user-info. A heuristic cannot prove content safe.
+Review and exact-input revalidation precede Vault saving. Legacy unsafe display fields
+are hidden without silently deleting existing records.
+
+No original media cleanup is exposed. Explicit camera Use publishes only that capture;
+record deletion and index forgetting explain their local scope. Gallery permission
+changes invalidate thumbnail caches and recheck access. No private media/text is logged,
+exported to cloud or added to Git during physical-device verification.

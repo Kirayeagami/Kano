@@ -22,12 +22,15 @@ try {
     [xml]$manifest = Get-Content 'app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml'
     $androidNamespace = 'http://schemas.android.com/apk/res/android'
     $forbidden = @('android.permission.INTERNET', 'android.permission.MANAGE_EXTERNAL_STORAGE',
-        'android.permission.QUERY_ALL_PACKAGES', 'android.permission.READ_MEDIA_IMAGES',
-        'android.permission.READ_MEDIA_VIDEO', 'android.permission.READ_EXTERNAL_STORAGE')
+        'android.permission.QUERY_ALL_PACKAGES', 'android.permission.WRITE_EXTERNAL_STORAGE')
     foreach ($permission in $manifest.manifest.'uses-permission') {
         if ($permission.GetAttribute('name', $androidNamespace) -in $forbidden) {
-            throw 'Merged manifest violates the selected-media/local-only boundary.'
+            throw 'Merged manifest violates the scoped-gallery/local-only boundary.'
         }
+    }
+    $legacyRead = @($manifest.manifest.'uses-permission') | Where-Object { $_.GetAttribute('name', $androidNamespace) -eq 'android.permission.READ_EXTERNAL_STORAGE' }
+    if ($legacyRead -and $legacyRead.GetAttribute('maxSdkVersion', $androidNamespace) -ne '32') {
+        throw 'Legacy media read access must be bounded to API 32.'
     }
     if ($manifest.manifest.application.GetAttribute('allowBackup', $androidNamespace) -ne 'false') {
         throw 'Backup must remain disabled for this development slice.'

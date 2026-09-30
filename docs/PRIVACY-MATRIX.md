@@ -1,22 +1,21 @@
-# Permissions, data, and capability matrix
+# Permissions and actual data flow
 
-| Capability | Access / source | Processing and retention | Native limits / current state |
-|---|---|---|---|
-| Device readings | StatFs, ActivityManager, sticky battery broadcast, Build | On-demand memory; no saved telemetry | Real device/storage-volume scope; no per-app battery or CPU attribution |
-| Selected media | ACTION_OPEN_DOCUMENT; persistable read URI grant | Local metadata + bounded streaming hash until user forgets | Only selected image/video documents; permission may be revoked; implemented slice |
-| Whole library | MediaStore + OS-version-specific media grants | Incremental local index, exclusions | Planned; partial Android 14+ access, no all-files permission |
-| Apps | PackageManager visibility + optional usage special access | Local app inventory/usage | Planned; arbitrary installed-app visibility/storage and force-stop unavailable |
-| OCR/QR | Selected image bytes | Local extraction into reviewed vault | Planned; QR/URL never automatically opened |
-| Delete media | MediaStore delete/trash request or eligible document provider | Explicit file-specific confirmation after durable extraction | Planned; not every URI is deletable; cannot silently delete |
-| Notifications | NotificationListener user grant | Sensitive local filtering, opt-in retention | 1.1; cannot read historical notifications or remove in-app ads |
-| Gmail | OAuth minimum scopes, provider review | Local minimized records, disconnect/purge | 1.1; credentials needed, no private Gmail DB access |
-| Browser | Share intent / user import / supported extension | Selected links only | Planned; no arbitrary app history access |
-| Cloud AI | Provider API credential + reviewed request consent | Minimized approved payload; documented provider retention | Disabled; no Internet permission or provider in this build |
-| Money / wardrobe / study | Explicit imports and selected sources | Sensitive storage review required | Planned; no payments or inference of sensitive traits |
-| Update metadata | Bundled release catalog initially | No user data transmitted | No remote available-version claim; store/update adapter planned |
+| Capability | Actual access | Processing/retention and limits |
+|---|---|---|
+| Device | StatFs, ActivityManager.MemoryInfo, sticky battery broadcast, Build | Foreground snapshots; volume/RAM/battery/hardware only, no fabricated per-app/CPU/health attribution |
+| Connectivity | ACCESS_NETWORK_STATE normal permission | Connection metadata only; INTERNET removed |
+| Gallery | READ_MEDIA_IMAGES/VIDEO, Android 14+ selected-access permission; legacy READ_EXTERNAL_STORAGE max API32 | Permission-aware MediaStore pages; full/images-only/videos-only/partial/denied/revoked states; no all-files access |
+| Selected documents | ACTION_OPEN_DOCUMENT and persisted read grants | Room metadata and bounded hashes; up to100 documents and100MiB/hash; forget releases index/grants, keeps originals |
+| Camera | Explicit CAMERA runtime permission; optional camera feature | Lifecycle-bound CameraX; private pending capture reviewed before explicit Use; API29+ Use publishes Pictures/Kano; retake/discard removes pending private capture only |
+| OCR/QR | Authorized image content URI | Bundled on-device Latin OCR/QR, encoded20MiB cap and sampled decoder; candidates uncertain, no auto-open/auto-save; sensitive patterns blocked |
+| Vault | Explicit reviewed save with fresh source digest | App-private Room schema3; database-level encryption absent; legacy sensitive rows masked in UI, raw rows retained |
+| Care | Explicit user entry | Local validated inventory/drafts; stock status is user supplied; confirmed record deletion |
+| Source cleanup | No executor exposed | Original files are retained; durable extraction receipt and OS delete confirmation remain missing |
+| Cloud/accounts | No adapter, request or Internet permission | OpenAI/Gemini/Perplexity/Gmail/browser/notification sources remain disconnected; no external upload |
+| Credentials | Android Keystore adapter | Encrypted bound credential files; no live credentials used; backup/transfer disabled |
 
-Android app-private storage is not a promise of absolute secrecy. Device compromise,
-unlocked-device access, screenshots, and user exports are separate threats. No raw file
-content, URI, name, or exception payload is written to diagnostics. Production logging
-must preserve this. Third-party document providers may themselves fetch cloud files;
-Kano does not control the provider's network/retention policy.
+Third-party document providers can themselves fetch remote files. Sensitive-pattern
+screening is conservative but does not guarantee detection. No private source content,
+raw URI or exception payload is deliberately logged. Physical validation screenshots
+may show user content and are kept outside Git. No accessibility service/root/private
+app scraping/blanket package visibility is implemented.

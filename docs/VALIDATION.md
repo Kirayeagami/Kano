@@ -1,24 +1,28 @@
-# Validation protocol
+# Android validation protocol
 
-Host checks: core policy tests, Android unit tests, lint, debug APK, instrumentation APK.
-Read STATUS.md for actual executions; this protocol does not itself mean checks passed.
+Evidence belongs in TEST_STATUS.md; this checklist alone is not a passing result.
+Always explicitly launch app.kano/.MainActivity and verify Kano is foreground before
+capturing. Launcher screenshots are not Kano acceptance evidence. Inspect real PNGs,
+correct observed layout/action defects and rerun the affected paths.
 
-## Device acceptance matrix
-- API 26 and API 35+; 375 dp width; 100% and 200% font; portrait/landscape; TalkBack.
-- Start offline; navigate Home/Device/Media/Privacy; back navigation and rotation.
-- Check real readings against OS storage-volume/battery scope; unavailable readings remain unknown.
-- Cancel document picker; pick 0/1/100+ documents; duplicate URI; duplicate names.
-- Search names with percent, underscore, backslash, Unicode; empty search and empty next page.
-- Unsupported MIME despite picker filter; unavailable cloud provider; missing/unknown sizes.
-- Zero-byte file; 100 MiB boundary; larger/misreported size; mutation during hashing; slow provider.
-- Stop while indexing; process death; low-battery queued work; restart and explicit refresh.
-- Revoke grant/delete original between import and indexing; verify name/hash purge and reselection.
-- Confirm/decline forget during indexing; verify no rows reappear and original media survives.
-- Inspect manifest: no INTERNET, broad media, QUERY_ALL_PACKAGES, or accessibility service.
-- Inspect logs/backups: no names/URIs/content; all private data excluded from backup/transfer.
-- Fresh install then upgrade preservation once schema 2 exists; no destructive migration.
+- Core/host tests, lint, both APKs and merged-manifest permission/backup guards.
+- API35 emulator then OnePlus Nord CE5/API36; installs preserve app data. Never run
+  synthetic/destructive instrumentation fixtures against personal phone data.
+- Home, Device, Storage, RAM, Battery, Connectivity, Apps, Diagnostics/System/Security,
+  Gallery and detail sheets, Vault, Style tabs, Care/editor, Settings/subpages/menu.
+- All8 styles in Light/Dark, System contrast, sole Glass OFF toggle, Reduce Motion.
+- 320/360dp and wide layouts, portrait/landscape, 100/200% fonts, gesture/3-button safe
+  areas, TalkBack and physical controls. Record which cases remain untested.
+- Reach end-of-list actions above footer, hamburger close/scroll, actual press/navigation
+  feedback; no dead actions, fake AI widget or invented reading/price/recommendation.
+- Camera permission denial/settings recovery, preview, lens/flash availability, actual
+  capture/review/retake/discard, rotation recovery, explicit publication and local analysis.
+- Real MediaStore permission/type/search/page behavior, partial/denied/revoked access,
+  thumbnails with unknown/invalid content, content changes/resume and source-open failure.
+- OCR/QR malformed/oversized input, sensitive QR/text, digest mutation, reviewed save,
+  idempotence and cancellation; source original must survive index forgetting.
+- Keystore binding/tamper/redaction, Room migration/preservation, logs and backup scope.
 
-## Release gates
-No public release until all required device checks pass, signing and target API policies
-are reviewed, privacy disclosures match actual data flows, dependency audit is complete,
-and extraction/cleanup are verified end to end for the declared Kano 1.0 scope.
+No public release until declared functionality, wider Android/device matrix, encrypted
+sensitive storage, release signing and policy review are verified. Current original-file
+cleanup and cloud integrations remain unavailable.

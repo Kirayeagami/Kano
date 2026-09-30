@@ -1,186 +1,88 @@
 package app.kano.ui
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Shapes
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
-// --- Stitch Prototype "Warm Glass Intelligence" Palette ---
-val KanoCoralPrimaryLight = Color(0xFFFF3B1D) // Vibrant Red-Orange Primary
-val KanoCoralGradientStartLight = Color(0xFFFF5A36)
-val KanoCoralGradientEndLight = Color(0xFFE82E0E)
-val KanoPeachAccentLight = Color(0xFFFF9F43) // Warm Peach Secondary
-val KanoOffWhiteBgLight = Color(0xFFF8F6F2) // Warm Off-White Canvas
-val KanoSurfaceWhiteLight = Color(0xFFFFFFFF)
-val KanoSurfaceNeutralLight = Color(0xFFF1EEE8)
-val KanoSurfaceNeutralHighLight = Color(0xFFE6E2D8)
-val KanoInkPrimaryLight = Color(0xFF111111) // Near-Black Text
-val KanoInkSecondaryLight = Color(0xFF666666) // Muted Charcoal
-val KanoPeachContainerLight = Color(0xFFFFEAE5)
-val KanoBlueContainerLight = Color(0xFFE8F2FF)
-val KanoGreenContainerLight = Color(0xFFE8F8F0)
-val KanoLavenderContainerLight = Color(0xFFF0ECF9)
-
-// --- Stitch Nothing-Inspired Dark Palette ---
-val KanoCoralPrimaryDark = Color(0xFFFF3B1D) // Vibrant Red-Orange Accent
-val KanoCoralGradientStartDark = Color(0xFFFF5232)
-val KanoCoralGradientEndDark = Color(0xFFD82808)
-val KanoPeachAccentDark = Color(0xFFFF9F43)
-val KanoOffWhiteBgDark = Color(0xFF000000) // Pure Black Canvas
-val KanoSurfaceWhiteDark = Color(0xFF161616) // Deep Charcoal Surface
-val KanoSurfaceNeutralDark = Color(0xFF222222) // Elevated Surface
-val KanoSurfaceNeutralHighDark = Color(0xFF2C2C2C)
-val KanoInkPrimaryDark = Color(0xFFFFFFFF) // Crisp Warm White
-val KanoInkSecondaryDark = Color(0xFFA0A0A0)
-val KanoPeachContainerDark = Color(0xFF3B120B)
-val KanoBlueContainerDark = Color(0xFF10253B)
-val KanoGreenContainerDark = Color(0xFF0E2E1B)
-val KanoLavenderContainerDark = Color(0xFF221A3B)
-
-// Composition-scoped tokens
-val KanoPeachContainer: Color @Composable get() = MaterialTheme.colorScheme.primaryContainer
-val KanoLavenderContainer: Color @Composable get() = MaterialTheme.colorScheme.secondaryContainer
+val KanoPeachContainer: Color @Composable get() = LocalKanoDesign.current.ambient
+val KanoLavenderContainer: Color @Composable get() = LocalKanoDesign.current.secondaryAmbient
 val KanoGreenContainer: Color @Composable get() = MaterialTheme.colorScheme.tertiaryContainer
 val KanoBlueContainer: Color @Composable get() = MaterialTheme.colorScheme.secondaryContainer
-val KanoCoralGradientStart: Color @Composable get() = MaterialTheme.colorScheme.primary
-val KanoCoralGradientEnd: Color @Composable get() = MaterialTheme.colorScheme.primary
 val KanoCoralPrimary: Color @Composable get() = MaterialTheme.colorScheme.primary
 
-private val KanoLightColors = lightColorScheme(
-    primary = KanoCoralPrimaryLight,
-    onPrimary = Color.White,
-    background = KanoOffWhiteBgLight,
-    onBackground = KanoInkPrimaryLight,
-    surface = KanoSurfaceWhiteLight,
-    onSurface = KanoInkPrimaryLight,
-    surfaceVariant = KanoSurfaceNeutralLight,
-    onSurfaceVariant = KanoInkSecondaryLight,
-    surfaceContainerLowest = Color.White,
-    surfaceContainerLow = KanoOffWhiteBgLight,
-    surfaceContainer = KanoSurfaceNeutralLight,
-    surfaceContainerHigh = KanoSurfaceNeutralHighLight,
-    surfaceContainerHighest = Color(0xFFDCD6CC),
-    primaryContainer = KanoPeachContainerLight,
-    onPrimaryContainer = Color(0xFF5A0E00),
-    secondary = KanoPeachAccentLight,
-    onSecondary = Color.Black,
-    tertiaryContainer = KanoGreenContainerLight,
-    secondaryContainer = KanoLavenderContainerLight,
-    onSecondaryContainer = Color(0xFF21153B),
-    outline = Color(0xFFE0DDD5),
-    error = Color(0xFFD32F2F),
-)
-
-private val KanoDarkColors = darkColorScheme(
-    primary = KanoCoralPrimaryDark,
-    onPrimary = Color.White,
-    background = KanoOffWhiteBgDark,
-    onBackground = KanoInkPrimaryDark,
-    surface = KanoSurfaceWhiteDark,
-    onSurface = KanoInkPrimaryDark,
-    surfaceVariant = KanoSurfaceNeutralDark,
-    onSurfaceVariant = KanoInkSecondaryDark,
-    surfaceContainerLowest = KanoSurfaceWhiteDark,
-    surfaceContainerLow = KanoOffWhiteBgDark,
-    surfaceContainer = KanoSurfaceNeutralDark,
-    surfaceContainerHigh = KanoSurfaceNeutralHighDark,
-    surfaceContainerHighest = Color(0xFF383838),
-    primaryContainer = KanoPeachContainerDark,
-    onPrimaryContainer = Color(0xFFFFD1C7),
-    secondary = KanoPeachAccentDark,
-    onSecondary = Color.Black,
-    tertiaryContainer = KanoGreenContainerDark,
-    secondaryContainer = KanoLavenderContainerDark,
-    onSecondaryContainer = Color(0xFFE2DCF8),
-    outline = Color(0xFF2A2A2A),
-    error = Color(0xFFEF5350),
-)
-
 @Composable
-fun KanoTheme(
-    themeMode: KanoThemeMode = KanoThemeMode.SYSTEM,
-    content: @Composable () -> Unit,
-) {
-    val darkTheme = when (themeMode) {
-        KanoThemeMode.LIGHT -> false
-        KanoThemeMode.DARK -> true
-        KanoThemeMode.SYSTEM -> isSystemInDarkTheme()
+fun KanoTheme(themeMode: KanoThemeMode = KanoThemeMode.SYSTEM,
+    visualTheme: KanoVisualTheme = KanoVisualTheme.KANO_GLASS, content: @Composable () -> Unit) {
+    val dark = when (themeMode) { KanoThemeMode.LIGHT -> false; KanoThemeMode.DARK -> true; KanoThemeMode.SYSTEM -> isSystemInDarkTheme() }
+    val design = visualDesign(visualTheme, dark)
+    val semanticColors = visualSemanticColors(visualTheme, dark)
+    val base = TextStyle(fontFamily = design.font, color = Color.Unspecified)
+    CompositionLocalProvider(
+        LocalKanoDesign provides design,
+        LocalKanoColors provides semanticColors
+    ) {
+        MaterialTheme(colorScheme = visualColors(visualTheme, dark),
+            typography = Typography(
+                displaySmall = base.copy(fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-0.5).sp),
+                headlineLarge = base.copy(fontSize = 26.sp, lineHeight = 32.sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-0.25).sp),
+                headlineMedium = base.copy(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.SemiBold),
+                headlineSmall = base.copy(fontSize = 19.sp, lineHeight = 25.sp, fontWeight = FontWeight.Medium),
+                titleLarge = base.copy(fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold),
+                titleMedium = base.copy(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
+                titleSmall = base.copy(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium),
+                bodyLarge = base.copy(fontSize = 15.sp, lineHeight = 22.sp),
+                bodyMedium = base.copy(fontSize = 14.sp, lineHeight = 20.sp),
+                bodySmall = base.copy(fontSize = 12.sp, lineHeight = 16.sp),
+                labelLarge = base.copy(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium),
+                labelMedium = base.copy(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
+                labelSmall = base.copy(fontSize = 11.sp, lineHeight = 14.sp),
+            ),
+            shapes = Shapes(
+                extraSmall = RoundedCornerShape(6.dp),
+                small = RoundedCornerShape(10.dp),
+                medium = RoundedCornerShape(design.radius * .65f),
+                large = RoundedCornerShape(design.radius),
+                extraLarge = RoundedCornerShape(design.radius + 6.dp)
+            ),
+            content = content)
     }
-
-    val colors = if (darkTheme) KanoDarkColors else KanoLightColors
-
-    MaterialTheme(
-        colorScheme = colors,
-        typography = Typography(),
-        shapes = Shapes(
-            extraSmall = RoundedCornerShape(8.dp),
-            small = RoundedCornerShape(12.dp),
-            medium = RoundedCornerShape(20.dp),
-            large = RoundedCornerShape(24.dp),
-            extraLarge = RoundedCornerShape(28.dp),
-        ),
-        content = content,
-    )
 }
-
 @Composable
 fun KanoButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
-    content: @Composable RowScope.() -> Unit,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+    content: @Composable RowScope.() -> Unit
 ) {
+    val interactions = remember { MutableInteractionSource() }
     Button(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .kanoPressScale(interactions, pressedScale = KanoMotionTokens.ScalePressed, enabled = enabled),
         enabled = enabled,
-        shape = RoundedCornerShape(18.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-        ),
+        shape = MaterialTheme.shapes.large,
+        interactionSource = interactions,
         contentPadding = contentPadding,
-        content = content,
+        content = content
     )
 }
 
@@ -189,24 +91,9 @@ fun KanoHeroButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    content: @Composable RowScope.() -> Unit,
+    content: @Composable RowScope.() -> Unit
 ) {
-    val gradient = Brush.horizontalGradient(listOf(KanoCoralGradientStart, KanoCoralGradientEnd))
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = Color.Transparent,
-        enabled = enabled,
-        onClick = onClick,
-    ) {
-        Row(
-            modifier = Modifier
-                .background(gradient, RoundedCornerShape(20.dp))
-                .padding(horizontal = 20.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            content = content,
-        )
-    }
+    KanoButton(onClick, modifier.fillMaxWidth(), enabled, content = content)
 }
 
 @Composable
@@ -214,123 +101,94 @@ fun KanoOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
-    content: @Composable RowScope.() -> Unit,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+    content: @Composable RowScope.() -> Unit
 ) {
+    val interactions = remember { MutableInteractionSource() }
+    val colors = KanoThemeColors
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .kanoPressScale(interactions, pressedScale = KanoMotionTokens.ScalePressed, enabled = enabled),
         enabled = enabled,
-        shape = RoundedCornerShape(18.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shape = MaterialTheme.shapes.large,
+        interactionSource = interactions,
+        border = BorderStroke(1.dp, if (enabled) colors.divider else colors.divider.copy(alpha = 0.4f)),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = colors.accent,
+            disabledContentColor = colors.textDisabled
+        ),
         contentPadding = contentPadding,
-        content = content,
+        content = content
     )
 }
 
-@Composable
-fun KanoCircularIconButton(
-    icon: ImageVector,
-    contentDescription: String?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
-    size: Dp = 48.dp,
-) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(size),
-        colors = IconButtonDefaults.iconButtonColors(
-            containerColor = containerColor,
-            contentColor = contentColor,
-        ),
-    ) {
-        Icon(imageVector = icon, contentDescription = contentDescription)
-    }
-}
-
-@Composable
-fun KanoCard(
-    modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-    cornerRadius: Dp = 24.dp,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(cornerRadius),
-        color = backgroundColor,
-        shadowElevation = 2.dp,
-        border = BorderStroke(1.dp, borderColor),
-    ) {
-        Column(modifier = Modifier.padding(20.dp), content = content)
-    }
-}
+enum class StatusTone { NEUTRAL, ACCENT, SUCCESS, WARNING, ERROR }
 
 @Composable
 fun StatusChip(
     text: String,
     modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    tone: StatusTone = StatusTone.NEUTRAL,
+    containerColor: Color? = null,
+    contentColor: Color? = null,
 ) {
+    val colors = KanoThemeColors
+    val resolvedTone = when {
+        text.contains("ERROR", ignoreCase = true) -> StatusTone.ERROR
+        text.contains("REVOKED", ignoreCase = true) -> StatusTone.WARNING
+        text.contains("LOW", ignoreCase = true) || text.contains("NEARLY", ignoreCase = true) -> StatusTone.WARNING
+        text.contains("ACTIVE", ignoreCase = true) || text.contains("Granted", ignoreCase = true) -> StatusTone.SUCCESS
+        text.contains("UNCERTAIN", ignoreCase = true) -> StatusTone.ACCENT
+        else -> tone
+    }
+    val defaultBg = when (resolvedTone) {
+        StatusTone.NEUTRAL -> if (colors.isDark) Color(0xFF2B2D2B) else Color(0xFFEEF0ED)
+        StatusTone.ACCENT -> if (colors.isDark) colors.accent.copy(alpha = 0.18f) else colors.accent.copy(alpha = 0.12f)
+        StatusTone.SUCCESS -> if (colors.isDark) colors.success.copy(alpha = 0.18f) else colors.success.copy(alpha = 0.12f)
+        StatusTone.WARNING -> if (colors.isDark) colors.warning.copy(alpha = 0.20f) else colors.warning.copy(alpha = 0.14f)
+        StatusTone.ERROR -> if (colors.isDark) colors.error.copy(alpha = 0.18f) else colors.error.copy(alpha = 0.12f)
+    }
+    val defaultContent = when (resolvedTone) {
+        StatusTone.NEUTRAL -> colors.textSecondary
+        StatusTone.ACCENT -> colors.accent
+        StatusTone.SUCCESS -> colors.success
+        StatusTone.WARNING -> colors.warning
+        StatusTone.ERROR -> colors.error
+    }
+    val bg = containerColor ?: defaultBg
+    val content = contentColor ?: defaultContent
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        color = containerColor,
+        shape = RoundedCornerShape(8.dp),
+        color = bg,
+        border = BorderStroke(0.5.dp, content.copy(alpha = if (colors.isDark) 0.35f else 0.25f))
     ) {
         Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = contentColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            text,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+            color = content,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
 }
-
 @Composable
 fun SectionTitle(title: String, detail: String) {
-    Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.semantics { heading() },
-        )
-        Text(
-            text = detail,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 6.dp),
-        )
+    val colors = KanoThemeColors
+    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Text(title, style = MaterialTheme.typography.headlineLarge, color = colors.textPrimary, modifier = Modifier.semantics { heading() })
+        if (detail.isNotBlank()) Text(detail, style = MaterialTheme.typography.bodyMedium, color = colors.textSecondary)
     }
 }
-
 @Composable
 fun FactRow(label: String, value: String, detail: String? = null) {
-    Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
-        if (value.length > 20) {
-            Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(2.dp))
-            Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-        } else {
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                Spacer(Modifier.width(8.dp))
-                Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            }
-        }
-        if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+    val colors = KanoThemeColors
+    Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = colors.textSecondary)
+        Text(value, style = MaterialTheme.typography.titleMedium, color = colors.textPrimary)
+        detail?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = colors.textTertiary) }
     }
-    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+    HorizontalDivider(color = colors.divider)
 }
+

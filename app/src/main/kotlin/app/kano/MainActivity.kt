@@ -1,83 +1,47 @@
 package app.kano
 
 import android.animation.ValueAnimator
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.SystemBarStyle
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Checkroom
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.outlined.PermMedia
-import androidx.compose.material.icons.outlined.Sanitizer
-import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.Smartphone
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.luminance
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import app.kano.ui.LocalGlassEnabled
-import app.kano.ui.LocalMotionEnabled
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import app.kano.ui.DeviceScreen
-import app.kano.ui.HomeScreen
-import app.kano.ui.KanoTheme
-import app.kano.ui.KanoViewModel
-import app.kano.ui.KnowledgeVaultScreen
-import app.kano.ui.MediaScreen
-import app.kano.ui.PersonalCareScreen
-import app.kano.ui.SettingsScreen
-import app.kano.ui.StyleScreen
+import androidx.navigation.compose.*
+import app.kano.ui.*
+import kotlinx.coroutines.delay
 
-data class NavDestination(
-    val route: String,
-    val label: String,
-    val icon: ImageVector,
-)
+data class NavDestination(val route: String, val label: String, val icon: ImageVector)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,131 +49,346 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val model: KanoViewModel = viewModel(factory = KanoViewModel.factory((application as KanoApplication).graph))
-            val themeMode by model.themeMode.collectAsStateWithLifecycle()
-            val glass by model.glass.collectAsStateWithLifecycle()
-            val reducedMotion by model.reducedMotion.collectAsStateWithLifecycle()
-            val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
-            KanoTheme(themeMode = themeMode) {
-                val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+            val mode by model.themeMode.collectAsStateWithLifecycle()
+            val visual by model.visualTheme.collectAsStateWithLifecycle()
+            val glassMode by model.glassMode.collectAsStateWithLifecycle()
+            val reduced by model.reducedMotion.collectAsStateWithLifecycle()
+            val device by model.device.collectAsStateWithLifecycle()
+            val owner = LocalLifecycleOwner.current
+            val lifecycle by owner.lifecycle.currentStateFlow.collectAsState()
+            DisposableEffect(owner, model) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_START) model.setForeground(true)
+                    if (event == Lifecycle.Event.ON_STOP) model.setForeground(false)
+                }
+                owner.lifecycle.addObserver(observer)
+                if (owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) model.setForeground(true)
+                onDispose { owner.lifecycle.removeObserver(observer); model.setForeground(false) }
+            }
+            val constrained = (device as? DeviceState.Ready)?.snapshot?.memoryLow != false
+            val motion = !reduced && !constrained && lifecycle.isAtLeast(Lifecycle.State.RESUMED) && ValueAnimator.areAnimatorsEnabled()
+            val glass = glassMode != KanoGlassMode.OFF
+            KanoTheme(mode, visual) {
+                val dark = MaterialTheme.colorScheme.background.luminance() < .5f
                 SideEffect {
                     val bars = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT) { dark }
                     enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
                 }
-                CompositionLocalProvider(LocalGlassEnabled provides glass,
-                    LocalMotionEnabled provides (!reducedMotion && lifecycleState.isAtLeast(Lifecycle.State.RESUMED) && ValueAnimator.areAnimatorsEnabled())) {
-                    KanoApp(model)
+                var showSplash by rememberSaveable { mutableStateOf(true) }
+                CompositionLocalProvider(
+                    LocalGlassEnabled provides glass,
+                    LocalMotionEnabled provides motion,
+                    LocalBlurEnabled provides (glass && !reduced && !constrained && Build.VERSION.SDK_INT >= 31)
+                ) {
+                    Box(Modifier.fillMaxSize()) {
+                        KanoApp(model)
+                        if (showSplash) {
+                            KanoSplashScreen(onDismiss = { showSplash = false })
+                        }
+                    }
                 }
             }
         }
     }
 }
 
+/**
+ * Premium Kano native splash screen featuring the official liquid-glass mascot artwork.
+ * Short, non-blocking, and gentle reveal transitioning directly into Home.
+ */
 @Composable
+fun KanoSplashScreen(onDismiss: () -> Unit) {
+    val motion = LocalMotionEnabled.current
+    val dark = KanoThemeColors.isDark
+    val colors = KanoThemeColors
+
+    if (!motion) {
+        LaunchedEffect(Unit) { onDismiss() }
+        return
+    }
+
+    var started by remember { mutableStateOf(false) }
+    var phase2 by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        started = true
+        delay(320)
+        phase2 = true
+        delay(400)
+        onDismiss()
+    }
+
+    val scale by animateFloatAsState(
+        targetValue = if (started) 1f else 0.90f,
+        animationSpec = KanoMotionTokens.SpringGentle,
+        label = "splashScale"
+    )
+    val alpha by animateFloatAsState(
+        targetValue = if (started) 1f else 0f,
+        animationSpec = tween(KanoMotionTokens.STANDARD, easing = KanoMotionTokens.EmphasizedDecelerate),
+        label = "splashAlpha"
+    )
+    val glintShift by animateFloatAsState(
+        targetValue = if (phase2) 1.25f else -0.25f,
+        animationSpec = tween(KanoMotionTokens.MAJOR_FAST, easing = KanoMotionTokens.FluidEasing),
+        label = "splashGlint"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (dark) Color(0xFF141210) else KanoBrandTokens.CreamCanvas)
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onDismiss() },
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val centerOffset = Offset(size.width * 0.5f, size.height * 0.48f)
+            val glowColor = if (dark) KanoBrandTokens.MintDark.copy(alpha = 0.22f) else KanoBrandTokens.MintSoft.copy(alpha = 0.45f)
+            val sakuraColor = if (dark) KanoBrandTokens.SakuraPink.copy(alpha = 0.10f) else KanoBrandTokens.SakuraSoft.copy(alpha = 0.35f)
+            drawCircle(Brush.radialGradient(listOf(glowColor, Color.Transparent), center = centerOffset, radius = size.width * 0.70f))
+            drawCircle(Brush.radialGradient(listOf(sakuraColor, Color.Transparent), center = Offset(centerOffset.x * 1.15f, centerOffset.y * 0.85f), radius = size.width * 0.50f))
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+                this.alpha = alpha
+            }
+        ) {
+            Surface(
+                shape = RoundedCornerShape(32.dp),
+                color = Color.Transparent,
+                shadowElevation = 8.dp,
+                border = BorderStroke(1.dp, Color.White.copy(alpha = if (dark) 0.22f else 0.55f)),
+                modifier = Modifier.size(160.dp)
+            ) {
+                Box {
+                    Image(
+                        painter = painterResource(id = R.drawable.kano_logo),
+                        contentDescription = "Kano",
+                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(32.dp))
+                    )
+                    Canvas(Modifier.matchParentSize()) {
+                        drawRect(
+                            Brush.linearGradient(
+                                listOf(Color.Transparent, Color.White.copy(alpha = if (dark) 0.20f else 0.45f), Color.Transparent),
+                                start = Offset(size.width * glintShift, 0f),
+                                end = Offset(size.width * (glintShift + 0.35f), size.height)
+                            )
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = "Kano",
+                style = MaterialTheme.typography.titleLarge,
+                color = colors.textPrimary,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun KanoApp(model: KanoViewModel) {
     val nav = rememberNavController()
     val entry by nav.currentBackStackEntryAsState()
-    val snackbars = remember { SnackbarHostState() }
+    val route = entry?.destination?.route
+    val snacks = remember { SnackbarHostState() }
     val message by model.message.collectAsStateWithLifecycle()
     val device by model.device.collectAsStateWithLifecycle()
-
+    val motion = LocalMotionEnabled.current
+    val dark = KanoThemeColors.isDark
+    val backgroundLayer = rememberGraphicsLayer()
+    val contentLayer = rememberGraphicsLayer()
+    val backdrop = remember(backgroundLayer, contentLayer) { FooterBackdrop(backgroundLayer, contentLayer) }
     val destinations = listOf(
         NavDestination("home", "Home", Icons.Outlined.Home),
         NavDestination("device", "Device", Icons.Outlined.Smartphone),
         NavDestination("media", "Media", Icons.Outlined.PermMedia),
-        NavDestination("vault", "Vault", Icons.Outlined.Lightbulb),
+        NavDestination("vault", "Vault", Icons.Outlined.Bookmarks),
         NavDestination("style", "Style", Icons.Outlined.Checkroom),
-        NavDestination("personal_care", "Care", Icons.Outlined.Sanitizer),
-        NavDestination("settings", "Privacy", Icons.Outlined.Shield),
+        NavDestination("personal_care", "Care", Icons.Outlined.SelfImprovement)
     )
-
-    LaunchedEffect(message) {
-        message?.let { snackbars.showSnackbar(it); model.message.value = null }
-    }
-
-    val navigate: (String) -> Unit = { route ->
-        nav.navigate(route) {
+    var more by remember { mutableStateOf(false) }
+    val navigate: (String) -> Unit = { target ->
+        nav.navigate(target) {
             popUpTo(nav.graph.startDestinationId) { saveState = true }
             launchSingleTop = true
             restoreState = true
         }
     }
-
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        snackbarHost = { SnackbarHost(snackbars) },
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(32.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
-                    shadowElevation = 8.dp,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                ) {
+    LaunchedEffect(message) {
+        message?.let {
+            snacks.showSnackbar(it)
+            model.message.value = null
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .matchParentSize()
+                .drawWithContent {
+                    backgroundLayer.record { this@drawWithContent.drawContent() }
+                    drawLayer(backgroundLayer)
+                }
+                .background(MaterialTheme.colorScheme.background)
+        )
+        Scaffold(
+            containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snacks) },
+            topBar = {
+                if (route != "camera") {
                     Row(
-                        modifier = Modifier
+                        Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 6.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically,
+                            .statusBarsPadding()
+                            .padding(horizontal = 20.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        destinations.forEach { dest ->
-                            val active = entry?.destination?.route == dest.route
-                            Surface(
-                                onClick = { navigate(dest.route) },
-                                shape = CircleShape,
-                                color = if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                                modifier = Modifier
-                                    .semantics { selected = active; role = Role.Tab },
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Icon(
-                                        imageVector = dest.icon,
-                                        contentDescription = dest.label,
-                                        tint = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(20.dp),
-                                    )
-                                    if (active) {
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(
-                                            text = dest.label,
-                                            fontWeight = FontWeight.Bold,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        )
-                                    }
-                                }
-                            }
+                        KanoMenuButton(onClick = { more = true })
+                    }
+                }
+            },
+            bottomBar = {
+                if (route != "camera") {
+                    BoxWithConstraints(
+                        Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(Modifier.padding(horizontal = if (maxWidth < 360.dp) 12.dp else 24.dp, vertical = 6.dp)) {
+                            LiquidFooter(destinations, route, navigate, backdrop, Modifier.widthIn(max = 420.dp).fillMaxWidth())
                         }
                     }
                 }
             }
-        },
-    ) { padding ->
-        NavHost(navController = nav, startDestination = "home", modifier = Modifier.padding(padding)) {
-            composable("home") {
-                HomeScreen(
-                    openDevice = { navigate("device") },
-                    openMedia = { navigate("media") },
-                    openStyle = { navigate("style") },
-                    openPersonalCare = { navigate("personal_care") },
-                    openVault = { navigate("vault") },
+        ) { insets ->
+            val footerInset = insets.calculateBottomPadding()
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(top = insets.calculateTopPadding(), bottom = 0.dp)
+                    .onGloballyPositioned { backdrop.contentOrigin = it.positionInRoot() }
+                    .drawWithContent {
+                        contentLayer.record { this@drawWithContent.drawContent() }
+                        drawLayer(contentLayer)
+                    }
+            ) {
+                KanoWaveBackground(
+                    Modifier.padding(bottom = 0.dp),
+                    waveColor = KanoBrandTokens.sectionWaveColor(route, dark),
+                    secondaryColor = if (dark) KanoBrandTokens.MintDark else KanoBrandTokens.MintSoft
                 )
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                    NavHost(
+                        navController = nav,
+                        startDestination = "home",
+                        modifier = Modifier.widthIn(max = 840.dp).fillMaxSize(),
+                        enterTransition = {
+                            if (motion) fadeIn(tween(KanoMotionTokens.MAJOR_FAST, easing = KanoMotionTokens.EmphasizedDecelerate)) +
+                                    slideInHorizontally(tween(KanoMotionTokens.MAJOR_FAST, easing = KanoMotionTokens.EmphasizedDecelerate)) { (it * 0.04f).toInt() }
+                            else EnterTransition.None
+                        },
+                        exitTransition = {
+                            if (motion) fadeOut(tween(KanoMotionTokens.MICRO, easing = KanoMotionTokens.EmphasizedAccelerate))
+                            else ExitTransition.None
+                        },
+                        popEnterTransition = {
+                            if (motion) fadeIn(tween(KanoMotionTokens.STANDARD, easing = KanoMotionTokens.EmphasizedDecelerate)) +
+                                    slideInHorizontally(tween(KanoMotionTokens.STANDARD, easing = KanoMotionTokens.EmphasizedDecelerate)) { -(it * 0.04f).toInt() }
+                            else EnterTransition.None
+                        },
+                        popExitTransition = {
+                            if (motion) fadeOut(tween(KanoMotionTokens.MICRO, easing = KanoMotionTokens.EmphasizedAccelerate))
+                            else ExitTransition.None
+                        }
+                    ) {
+                        composable("home") {
+                            HomeScreen(
+                                { navigate("device") },
+                                { navigate("media") },
+                                { navigate("style") },
+                                { navigate("personal_care") },
+                                { navigate("vault") },
+                                { nav.navigate("camera") },
+                                model,
+                                { navigate("shopping") },
+                                { navigate("saved_media") },
+                                footerInset = footerInset
+                            )
+                        }
+                        composable("device") { DeviceScreen(device, model::refreshDevice, model = model, openMedia = { navigate("media") }, footerInset = footerInset, openStorage = { navigate("storage") }) }
+                        composable("storage") { StorageScreen(model, footerInset) }
+                        composable("media") { GalleryScreen(model, { nav.navigate("camera") }, { navigate("saved_media") }, footerInset = footerInset) }
+                        composable("saved_media") { MediaScreen(model, footerInset = footerInset) }
+                        composable("vault") { KnowledgeVaultScreen(model, footerInset = footerInset) }
+                        composable("style") { StyleScreen({ nav.navigate("camera") }, { navigate("media") }, footerInset = footerInset) }
+                        composable("personal_care") { PersonalCareScreen(model, { nav.navigate("camera") }, footerInset = footerInset) }
+                        composable("settings") { SettingsScreen(model, footerInset = footerInset) }
+                        composable("appearance") { SettingsScreen(model, "Appearance", footerInset = footerInset) }
+                        composable("privacy") { SettingsScreen(model, "Privacy", footerInset = footerInset) }
+                        composable("permissions") { SettingsScreen(model, "Permissions", footerInset = footerInset) }
+                        composable("providers") { SettingsScreen(model, "AI providers", footerInset = footerInset) }
+                        composable("about") { SettingsScreen(model, "About", footerInset = footerInset) }
+                        composable("diagnostics") { DeviceScreen(device, model::refreshDevice, model, initialPanel = "Diagnostics", footerInset = footerInset, openStorage = { navigate("storage") }) }
+                        composable("shopping") { ShoppingScreen(model, { navigate("personal_care") }, { nav.navigate("camera") }, footerInset = footerInset) }
+                        composable("life") { DailyLifeScreen(footerInset = footerInset) }
+                        composable("camera") { CameraCaptureScreen({ uri -> model.runLocalVision(uri); nav.popBackStack() }, { nav.popBackStack() }) }
+                    }
+                }
             }
-            composable("device") { DeviceScreen(device, model::refreshDevice) }
-            composable("media") { MediaScreen(model) }
-            composable("vault") { KnowledgeVaultScreen(model) }
-            composable("style") { StyleScreen() }
-            composable("personal_care") { PersonalCareScreen(model) }
-            composable("settings") { SettingsScreen(model) }
         }
     }
+    if (more) ModalBottomSheet(
+        onDismissRequest = { more = false },
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = KanoThemeColors.surface.copy(alpha = if (LocalGlassEnabled.current) .95f else 1f)
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .testTag("kano-menu")
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                "Kano menu",
+                style = MaterialTheme.typography.headlineMedium,
+                color = KanoThemeColors.textPrimary,
+                modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
+            )
+            KanoCardGroup {
+                val menuItems = listOf(
+                    "Settings" to "settings",
+                    "Storage intelligence" to "storage",
+                    "Appearance & themes" to "appearance",
+                    "Privacy" to "privacy",
+                    "Permissions" to "permissions",
+                    "AI providers" to "providers",
+                    "Diagnostics" to "diagnostics",
+                    "Shopping" to "shopping",
+                    "Daily Life" to "life",
+                    "About" to "about"
+                )
+                menuItems.forEachIndexed { index, (label, target) ->
+                    KanoGroupItem(
+                        title = label,
+                        detail = "",
+                        onClick = { more = false; navigate(target) },
+                        showDivider = index < menuItems.lastIndex
+                    )
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+    VisionReviewDialog(model)
 }

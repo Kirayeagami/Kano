@@ -1,34 +1,46 @@
-# KANO — Native Android Personal Assistant
+# Kano — native Android
 
-Private, native Android personal assistant. This repository is the **0.1.0-dev development foundation**, working toward Kano 1.0 (Device + Media). It is not a production release.
+Kano 0.1.0-dev is a local-first development app. Every existing screen now uses the
+shared native Compose presentation system. The latest user request is refinement and
+actual Android validation, not another architecture/UI rewrite.
 
-Available: manual Care inventory with add/edit/confirmed delete, saved light/dark/system theme and glass/reduced-motion preferences, real storage/memory/battery snapshots, explicit image/video selection, persisted read grants, local Room metadata index, bounded SHA-256 indexing through WorkManager, filename search, stop/retry, Android Keystore credential encryption, and confirmed index forgetting. No original file deletion, Internet permission, analytics, AI provider, or connected account.
+Implemented: eight visual themes with Light/Dark/System, one Glass OFF switch, reduced
+motion, compact floating navigation and hamburger controls; real foreground device
+readings; permission-aware MediaStore gallery and actual thumbnails/details; lifecycle
+CameraX capture/review; bundled Latin OCR/QR; explicitly reviewed Vault records; manual
+Care inventory; selected-document WorkManager index; Room migrations1→2→3; Android
+Keystore credential adapter. No live cloud provider/account or Internet permission.
 
-Read [status and validation](docs/STATUS.md), [state](docs/KANO_STATE.md), [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [privacy matrix](docs/PRIVACY-MATRIX.md), and [risks](docs/RISKS.md).
+Style generation, shopping prices, Gmail/notification intelligence, semantic Universal
+AI Search, advanced knowledge graph and original-file cleanup are unfinished. Screens
+expose truthful unavailable states and working local actions. RAM action clears only
+Kano thumbnail-cache references and reports actual before/after readings without a
+performance-gain claim. App-private Room storage is not database-level encryption.
 
-## Build & Verify
+Read [current status](docs/STATUS.md), [runtime evidence](docs/TEST_STATUS.md),
+[UI system](docs/UI_SYSTEM.md), [architecture](docs/ARCHITECTURE.md),
+[privacy](docs/PRIVACY-MATRIX.md) and [handoff](docs/HANDOFF.md).
+[KANO_WORKLOG.md](KANO_WORKLOG.md) is the single consolidated record with supplied
+prompts, changes/reasons, failures, evidence, APK details and continuation guidance.
 
-JDK 17, Android SDK platform/build-tools 35, Gradle wrapper. Set `JAVA_HOME`, set SDK location using `local.properties` (not committed), then run:
+## Build
+
+JDK17, Android SDK35 and pinned Gradle dependencies. Local setup is untracked.
 
 ```powershell
 .\scripts\check.ps1
 ```
 
-Or execute Gradle tasks directly:
+The script runs core/host tests, lint, APK/test-APK assembly and merged-manifest guards.
+Run instrumentation on an explicitly selected emulator, preserving personal-device data:
 
 ```powershell
-.\gradlew.bat :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
-.\gradlew.bat :app:connectedDebugAndroidTest
+adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
+adb -s emulator-5554 install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s emulator-5554 shell am start -n app.kano/.MainActivity
+adb -s emulator-5554 shell am instrument -w app.kano.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-The connected command requires an emulator/device attached. Installable development APK: `app/build/outputs/apk/debug/app-debug.apk`. Production signing is not configured.
-
-Dependencies are pinned in Gradle.
-
-## Boundaries
-
-Only user-selected image/video document URIs are indexed. A maximum of 100 selected documents and 100 MiB per hash bounds the first slice. There is no full-library scanner, semantic classification, OCR, URL extraction, knowledge vault, duplicate review UI, or cleanup executor yet. Hash equality alone is never permission to delete. Document providers may fetch content remotely themselves; Kano does not make network requests.
-
-App-private metadata is not an additionally encrypted vault. Sensitive record storage, retention, exports, migrations, release signing, and provider integrations need their own reviewed implementations. Read [AGENTS.md](AGENTS.md) before changing the project.
-
-An Android Keystore credential adapter is implemented and tested; no real credentials or provider integration is connected. See [KANO_WORKLOG.md](KANO_WORKLOG.md) and [docs/HANDOFF.md](docs/HANDOFF.md) for the consolidated record, evidence, and multi-agent handoff.
+Development APK: `dist/Kano-debug.apk`. Release signing is not configured.
+Compose previews are in `UiPreviews.kt`; actual Android screenshots are linked from
+TEST_STATUS.md. Physical-phone private imagery is intentionally outside Git.

@@ -2,6 +2,8 @@ package app.kano.data
 
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
+import androidx.room.withTransaction
+import app.kano.core.VisionPolicy
 
 enum class KnowledgeType(val label: String) {
     WEBSITE("Website"),
@@ -48,6 +50,9 @@ class KnowledgeRepository(private val database: KanoDatabase) {
         urlOrPayload: String? = null,
         id: String? = null,
     ) {
+        require(title.trim().isNotEmpty() && sourceUri.startsWith("content://"))
+        require(!VisionPolicy.hasSensitiveSignal(title + " " + detail + " " + urlOrPayload.orEmpty()))
+        if (urlOrPayload != null) require(VisionPolicy.publicWebUrl(urlOrPayload) != null)
         val record = KnowledgeRecord(
             id = id ?: UUID.randomUUID().toString(),
             entityType = entityType.name,
@@ -59,7 +64,10 @@ class KnowledgeRepository(private val database: KanoDatabase) {
             confidence = confidence.name,
             createdAt = System.currentTimeMillis(),
         )
-        database.knowledge().insert(record)
+        database.withTransaction {
+            check(database.knowledge().find(record.id) != null || database.knowledge().count() < 1_000) { "Vault capacity reached" }
+            database.knowledge().insert(record)
+        }
     }
 
     suspend fun delete(id: String) {

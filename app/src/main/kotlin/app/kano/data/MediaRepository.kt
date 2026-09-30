@@ -96,8 +96,8 @@ class MediaRepository(context: Context, private val dao: MediaDao) {
         }
     }
 
-    /** Extract-Before-Delete: Re-validates file state, releases SAF read grant, and removes record. */
-    suspend fun extractBeforeDelete(record: MediaRecord): Boolean = withContext(Dispatchers.IO) {
+    /** Forgets one selected index entry after revalidation. Original media is never deleted. */
+    suspend fun forgetRecord(record: MediaRecord): Boolean = withContext(Dispatchers.IO) {
         mutation.withLock {
             val uri = record.uri.toUri()
             if (resolver.persistedUriPermissions.none { it.uri == uri && it.isReadPermission }) {

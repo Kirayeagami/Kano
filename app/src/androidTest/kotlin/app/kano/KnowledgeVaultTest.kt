@@ -60,12 +60,12 @@ class KnowledgeVaultTest {
     fun deleteKnowledgeEntity() = runBlocking {
         repository.save(
             title = "QR Code Payload",
-            detail = "Wi-Fi config payload",
+            detail = "Reviewed website",
             entityType = KnowledgeType.QR_PAYLOAD,
             sourceUri = "content://media/external/images/media/2",
             extractionType = ExtractionType.QR_CODE,
             confidence = Confidence.CONFIRMED,
-            urlOrPayload = "WIFI:S:MyWifi;P:pass123;;",
+            urlOrPayload = "https://example.com",
             id = "entity-qr-123",
         )
 

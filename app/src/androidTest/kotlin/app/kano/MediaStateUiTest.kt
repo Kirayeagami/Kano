@@ -15,7 +15,9 @@ class MediaStateUiTest {
         val uri = "content://kano-test/error"
         try {
             runBlocking { database.media().add(MediaRecord(uri, "TEST ONLY failure.png", state = "ERROR")) }
-            compose.onNodeWithText("Media", useUnmergedTree = true).performClick()
+        compose.onNodeWithContentDescription("Media").performClick()
+        compose.onNodeWithContentDescription("Gallery tools").performClick()
+            compose.onNodeWithText("Saved document index").performClick()
             compose.waitUntil(10_000) { compose.onAllNodesWithText("1 Selected Documents").fetchSemanticsNodes().isNotEmpty() }
             compose.onNode(hasScrollAction()).performScrollToNode(hasText("ERROR · RETRY INDEX"))
             compose.onNodeWithText("ERROR · RETRY INDEX").assertIsDisplayed()

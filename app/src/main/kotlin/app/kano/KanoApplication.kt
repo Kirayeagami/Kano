@@ -12,16 +12,21 @@ import app.kano.data.KnowledgeRepository
 import app.kano.data.MediaRepository
 import app.kano.platform.DeviceReader
 import app.kano.platform.MediaIntelligenceProcessor
+import app.kano.platform.GalleryRepository
 import app.kano.security.KeystoreCredentialStore
 import app.kano.ui.ThemeManager
 
 class KanoApplication : Application() {
     val graph: AppGraph by lazy { AppGraph(this) }
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        app.kano.platform.GalleryThumbnails.clear()
+    }
 }
 
 class AppGraph(context: Context) {
     val database = Room.databaseBuilder(context, KanoDatabase::class.java, "kano.db")
-        .addMigrations(KanoDatabase.MIGRATION_1_2, KanoDatabase.MIGRATION_2_3).build()
+        .addMigrations(KanoDatabase.MIGRATION_1_2, KanoDatabase.MIGRATION_2_3, KanoDatabase.MIGRATION_3_4).build()
     val care = CareRepository(database)
     val knowledge = KnowledgeRepository(database)
     val media = MediaRepository(context, database.media())
@@ -30,5 +35,8 @@ class AppGraph(context: Context) {
     val ai = AiRouter(emptyList(), PrivacyFirewall())
     val credentials by lazy { KeystoreCredentialStore(context) }
     val themeManager = ThemeManager(context)
-    val mediaProcessor by lazy { MediaIntelligenceProcessor(context, knowledge) }
+    val gallery = GalleryRepository(context)
+    val storageSources = app.kano.platform.StorageSources(context)
+    val storage = app.kano.data.StorageRepository(context, database, storageSources, work)
+    val mediaProcessor by lazy { MediaIntelligenceProcessor(context) }
 }
